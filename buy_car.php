@@ -63,8 +63,14 @@
                 'employee_name' => $employee_name
             ];
 
-            // Redirect to receipt page
-            header("Location: recipt.php");
+            // Redirect to receipt page in a new tab
+            echo "<script>
+                    const receiptWindow = window.open('recipt.php', '_blank');
+                    if (receiptWindow) {
+                        receiptWindow.focus();
+                    }
+                    window.location.href = 'inventory.php';
+                  </script>";
             exit();
         } else {
             $error_message = "Error: " . $sql . "<br>" . $conn->error;
