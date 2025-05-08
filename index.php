@@ -1,4 +1,5 @@
-<?php   
+<?php
+    session_start();
     $servername = "localhost";
     $username = "root";
     $password = "";
@@ -12,6 +13,36 @@
     }
 
     $consulta = $conn->query("SELECT * FROM `carros` WHERE `featured` = 1");
+
+    $login_error = null;
+    $show_login_popup = false;
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
+        $user_username = $_POST['username'];
+        $user_password = $_POST['password'];
+
+        $sql = "SELECT * FROM users WHERE username = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $user_username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            if (password_verify($user_password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                header("Location: index.php");
+                exit();
+            } else {
+                $login_error = "Contraseña incorrecta.";
+                $show_login_popup = true;
+            }
+        } else {
+            $login_error = "Usuario no encontrado.";
+            $show_login_popup = true;
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -22,14 +53,41 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             .card-img-top {
-                object-fit: cover; /* Ensure the image fills the area */
-                width: 100%; /* Full width of the card */
-                height: 200px; /* Fixed height for uniformity */
+                object-fit: cover;
+                width: 100%;
+                height: 200px;
+            }
+            .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
+            .user-login-form {
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+            .admin-login {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                cursor: pointer;
+                opacity: 0;
+            }
+            .admin-login:hover {
+                opacity: 1;
             }
         </style>
     </head>
     <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,10 +104,25 @@
                         <li class="nav-item">
                             <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="admin/login.php">Admin</a>
-                        </li>
                     </ul>
+                </div>
+                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <?php if ($login_error): ?>
+                        <div class="alert alert-danger"><?php echo $login_error; ?></div>
+                    <?php endif; ?>
+                    <form method="post" action="">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Usuario</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
+                        <a href="register.php" class="btn btn-secondary">Registrarse</a>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -60,7 +133,7 @@
                     while ($result = $consulta->fetch_object()) {
                         $imageSrc = "images/" . $result->img_name . ".png";
                         $shortDescription = strlen($result->description) > 40 ? substr($result->description, 0, 40) . '...' : $result->description;
-                        $typeCapitalized = ucfirst($result->type); // Capitalize the first letter
+                        $typeCapitalized = ucfirst($result->type);
                         echo "<div class='col-md-4 mb-4'>";
                         echo "<div class='card'>";
                         echo "<img src='" . $imageSrc . "' class='card-img-top' alt='" . $result->name . "'>";
@@ -77,4 +150,20 @@
                 ?>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-QF1FfH2Y5h2m5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5v5h5
+        <img src="Untitled.svg" alt="Admin Login" class="admin-login" onclick="window.location.href='admin/login.php'">
+        <script>
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
+
+            // Automatically show login popup if login error exists
+            <?php if ($show_login_popup): ?>
+                document.addEventListener('DOMContentLoaded', function () {
+                    toggleUserLogin();
+                });
+            <?php endif; ?>
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

@@ -26,6 +26,21 @@
                 width: 100%; /* Full width of the card */
                 height: 200px; /* Fixed height for uniformity */
             }
+            .user-login-icon {
+                cursor: pointer;
+                width: 30px;
+                height: 30px;
+            }
+            .user-login-form {
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 10px;
+                background-color: white;
+                padding: 10px;
+                border: 1px solid #ccc;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
         </style>
     </head>
     <body>
@@ -50,6 +65,20 @@
                             <a class="nav-link" href="admin/login.php">Admin</a>
                         </li>
                     </ul>
+                </div>
+                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <form method="post" action="user_login.php">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Usuario</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -79,5 +108,11 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-wEmeIV1mKuiNp12z93r+8mW9ckKnQe7f4pANCzW5yJlHCu6pC3e6pniU9FjF9ajs" crossorigin="anonymous"></script>
+        <script>
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
+        </script>
     </body>
 </html>

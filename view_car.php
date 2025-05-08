@@ -35,6 +35,28 @@
                 height: auto;
                 border-radius: 8px;
             }
+            .user-login-form {
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+            .admin-login {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                cursor: pointer;
+                opacity: 0;
+            }
+            .admin-login:hover {
+                opacity: 1;
+            }
         </style>
     </head>
     <body>
@@ -78,6 +100,28 @@
                 </div>
             </div>
         </div>
+        <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+        <div class="user-login-form" id="userLoginForm">
+            <form method="post" action="user_login.php">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Usuario</label>
+                    <input type="text" class="form-control" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                <a href="register.php" class="btn btn-secondary">Registrarse</a>
+            </form>
+        </div>
+        <img src="Untitled.svg" alt="Admin Login" class="admin-login" onclick="window.location.href='admin/login.php'">
+        <script>
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>
