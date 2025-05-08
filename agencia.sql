@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 09, 2025 at 05:28 PM
+-- Generation Time: May 07, 2025 at 08:07 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -39,7 +39,8 @@ CREATE TABLE `admins` (
 
 INSERT INTO `admins` (`id`, `username`, `password`) VALUES
 (1, 'admin', '$2y$10$Nf4rt3tsNsHdRwsjMrPii.Dh5DtcPxqS/lBLnOs64HvBTpte0YTCO'),
-(2, 'nick_rangel', '');
+(2, 'nick_rangel', ''),
+(3, 'admin3', '$2y$10$K0pJDfpNFRMKgbD.eAmBdO63//DkybjeIZKS42jzqZLP.LmYG5PK6');
 
 -- --------------------------------------------------------
 
@@ -96,7 +97,9 @@ CREATE TABLE `citas` (
 
 INSERT INTO `citas` (`id`, `datetime`, `client_name`, `phone`, `id_car`, `id_employee`, `deleted`) VALUES
 (1, '2025-04-04 11:00:00', 'Johnny', 0, 6, 1, 0),
-(2, '2025-04-25 10:00:00', 'brah idk', 0, 6, 1, 0);
+(2, '2025-04-25 10:00:00', 'brah idk', 0, 6, 1, 0),
+(3, '2025-04-30 14:00:00', 'Miguel Angel', 4491234567, 6, 8, 0),
+(4, '2025-05-23 12:00:00', 'Kadir Koprulu Hernandez', 4497510546, 8, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -207,11 +210,13 @@ INSERT INTO `sales` (`id`, `id_car`, `client`, `employee_id`, `price`, `percent`
 (48, 2, 'Stella Jenkins', 4, 32000, 0.3999, 3200, 1, 24, 4532756279624064, 11, 2029, 1286, 0),
 (49, 4, 'David Sanders', 2, 1, 0.6846, 0.1, 1, 36, 6011000990139424, 6, 2027, 6724, 0),
 (50, 7, 'Leah Barnes', 3, 20000, 0.2232, 0, 0, 0, 378282246310005, 10, 2030, 4187, 0),
-(100, 2, 'Nick Rangel', 1, 32000, 0.05, 3200, 0, 0, 1234567890000000, 8, 2027, 1234, 0),
-(101, 2, 'Fofo Marquez', 1, 32000, 0.15, 9600, 0, 0, 1234567890987654, 8, 2027, 2345, 0),
-(102, 2, 'Nick Rangel', 1, 32000, 0.15, 9600, 0, 0, 2345672345678987, 8, 2027, 2345, 0),
-(103, 2, 'Nickla Rangel', 1, 32000, 0.15, 9600, 0, 0, 3456789098765434, 8, 2027, 3456, 0),
-(104, 2, 'Daniel O\'tarris', 1, 32000, 0.15, 9600, 0, 0, 5896123655478965, 8, 4568, 3456, 0);
+(51, 2, 'Nick Rangel', 1, 32000, 0.05, 3200, 0, 0, 1234567890000000, 8, 2027, 1234, 0),
+(52, 2, 'Fofo Marquez', 1, 32000, 0.15, 9600, 0, 0, 1234567890987654, 8, 2027, 2345, 0),
+(53, 2, 'Nick Rangel', 1, 32000, 0.15, 9600, 0, 0, 2345672345678987, 8, 2027, 2345, 0),
+(54, 2, 'Nickla Rangel', 1, 32000, 0.15, 9600, 0, 0, 3456789098765434, 8, 2027, 3456, 0),
+(55, 2, 'Daniel O\'tarris', 1, 32000, 0.15, 9600, 0, 0, 5896123655478965, 8, 4568, 3456, 0),
+(105, 2, 'Kadir', 1, 32000, 0.15, 9600, 0, 0, 1234567890000000, 8, 2027, 3949, 0),
+(106, 2, 'Kadir Koprulu Hernandez', 1, 32000, 0.1, 6400, 0, 0, 1234567890000000, 8, 7899, 7879, 0);
 
 --
 -- Indexes for dumped tables
@@ -255,7 +260,7 @@ ALTER TABLE `sales`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `carros`
@@ -267,7 +272,7 @@ ALTER TABLE `carros`
 -- AUTO_INCREMENT for table `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -279,7 +284,7 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
