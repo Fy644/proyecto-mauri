@@ -65,8 +65,83 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Agregar Nuevo Carro</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <style>
+            .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
+            .user-login-form {
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+        </style>
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="../index.php">Agencia Elmas Capitos</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../index.php">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../inventory.php">Inventario</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../new_appointment.php">Prueba de coche</a>
+                        </li>
+                    </ul>
+                </div>
+                <img src="../Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                            $user_id = $_SESSION['user_id'];
+                            $user_query = $conn->prepare("SELECT profile_picture FROM users WHERE id = ?");
+                            $user_query->bind_param("i", $user_id);
+                            $user_query->execute();
+                            $user_result = $user_query->get_result();
+                            $user_data = $user_result->fetch_assoc();
+                            $profile_picture = $user_data['profile_picture'] ?? '../default_profile.png'; // Default profile picture
+                        ?>
+                        <div class="text-center mb-3">
+                            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                        </div>
+                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                        <a href="../user_settings.php" class="btn btn-primary mb-2">User Settings</a>
+                        <form method="post" action="">
+                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
+                        </form>
+                    <?php else: ?>
+                        <form method="post" action="">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
+                            <a href="../register.php" class="btn btn-secondary">Registrarse</a>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </nav>
         <div class="container mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h1 class="text-center">Agregar Nuevo Carro</h1>
@@ -141,6 +216,11 @@
                     console.log("File selected:", file.name);
                 }
             });
+
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-wEmeIV1mKuiNp12z93r+8mW9ckKnQe7f4pANCzW5yJlHCu6pC3e6pniU9FjF9ajs" crossorigin="anonymous"></script>
     </body>

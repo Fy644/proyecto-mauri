@@ -36,6 +36,7 @@
         $expiration_month = intval(ltrim($_POST['expiration_month'], '0')); // Remove leading zeros
         $expiration_year = intval($_POST['expiration_year']);
         $pin = intval($_POST['pin']); // Ensure PIN is numeric
+        $current_datetime = date('Y-m-d H:i:s'); // Get the current datetime
 
         // Calculate down payment, interest, and monthly rate
         $price = $car['price'];
@@ -43,8 +44,8 @@
         $interest_rate = $credit_score >= 700 ? 0.05 : ($credit_score >= 600 ? 0.1 : 0.15);
         $monthly_rate = $monthly ? (($price - $down_payment) * (1 + $interest_rate)) / $months : 0;
 
-        $sql = "INSERT INTO sales (id_car, client, employee_id, price, percent, down, monthly, months, card_number, expiration_month, expiration_year, pin, deleted) 
-                VALUES ('$car_id', '$client_name', '$id_employee', '$price', '$interest_rate', '$down_payment', '$monthly_rate', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', 0)";
+        $sql = "INSERT INTO sales (id_car, client, employee_id, price, percent, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetime, deleted) 
+                VALUES ('$car_id', '$client_name', '$id_employee', '$price', '$interest_rate', '$down_payment', '$monthly_rate', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', '$current_datetime', 0)";
 
         if ($conn->query($sql) === TRUE) {
             // Fetch employee name
@@ -60,7 +61,8 @@
                 'monthly' => $monthly,
                 'monthly_rate' => $monthly_rate,
                 'months' => $months,
-                'employee_name' => $employee_name
+                'employee_name' => $employee_name,
+                'datetime' => $current_datetime
             ];
 
             // Redirect to receipt page
@@ -86,9 +88,85 @@
             .expiration-date input {
                 width: 48%;
             }
+            .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
+            .user-login-form {
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
         </style>
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.php">Inventario</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
+                        </li>
+                    </ul>
+                </div>
+                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                            $user_id = $_SESSION['user_id'];
+                            $user_query = $conn->prepare("SELECT profile_picture FROM users WHERE id = ?");
+                            $user_query->bind_param("i", $user_id);
+                            $user_query->execute();
+                            $user_result = $user_query->get_result();
+                            $user_data = $user_result->fetch_assoc();
+                            $profile_picture = $user_data['profile_picture'] ?? 'default_profile.png'; // Default profile picture
+                        ?>
+                        <div class="text-center mb-3">
+                            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                        </div>
+                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                        <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
+                        <form method="post" action="">
+                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
+                        </form>
+                    <?php else: ?>
+                        <?php if (isset($error_message)): ?>
+                            <div class="alert alert-danger"><?php echo $error_message; ?></div>
+                        <?php endif; ?>
+                        <form method="post" action="">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
+                            <a href="register.php" class="btn btn-secondary">Registrarse</a>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </nav>
         <div class="container mt-5">
             <h1 class="text-center">Comprar <?php echo htmlspecialchars($car['name']); ?></h1>
             <?php if (isset($success_message)): ?>

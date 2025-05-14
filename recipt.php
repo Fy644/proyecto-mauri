@@ -8,14 +8,14 @@
     $details = $_SESSION['purchase_details'];
     unset($_SESSION['purchase_details']); // Clear session data after use
 
-    require 'fpdf/fpdf.php'; // Include FPDF library
+    // Ensure the FPDF library is included correctly
+    require_once __DIR__ . '/fpdf/fpdf.php';
 
     class PDF extends FPDF {
         function Header() {
-            // Check if the logo file exists
-            $logoPath = 'logo.png';
+            $logoPath = __DIR__ . '/logo.png'; // Adjust the path to the logo
             if (file_exists($logoPath)) {
-                $this->Image($logoPath, 10, 6, 30); // Adjust the path and size of the logo
+                $this->Image($logoPath, 10, 6, 30);
             } else {
                 $this->SetFont('Arial', 'I', 10);
                 $this->Cell(0, 10, 'Logo no disponible', 0, 1, 'C');
@@ -59,8 +59,8 @@
             $this->Cell(50, 10, 'Empleado:', 0, 0, 'L');
             $this->Cell(0, 10, utf8_decode($details['employee_name']), 0, 1, 'L');
 
-            $this->Cell(50, 10, 'Fecha:', 0, 0, 'L');
-            $this->Cell(0, 10, date('Y-m-d H:i:s'), 0, 1, 'L');
+            $this->Cell(50, 10, 'Fecha de Compra:', 0, 0, 'L');
+            $this->Cell(0, 10, $details['datetime'], 0, 1, 'L');
 
             $this->Ln(10);
             $this->SetFont('Arial', 'B', 12);

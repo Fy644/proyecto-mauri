@@ -19,7 +19,7 @@
 
     // Fetch the 5 most recent sales
     $sales = $conn->query("
-        SELECT sales.id, sales.client, sales.price, sales.down, sales.monthly, sales.months, sales.percent, 
+        SELECT sales.id, sales.client, sales.price, sales.down, sales.monthly, sales.months, sales.percent, sales.datetime,
                carros.name AS car_name, employees.name AS employee_name 
         FROM sales 
         INNER JOIN carros ON sales.id_car = carros.id 
@@ -87,6 +87,7 @@
                             <th>Pago Mensual</th>
                             <th>Meses</th>
                             <th>Tasa de Interés</th>
+                            <th>Fecha de Compra</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,6 +114,7 @@
                                 </td>
                                 <td><?php echo $sale['months'] > 0 ? $sale['months'] : "N/A"; ?></td>
                                 <td><?php echo $sale['percent'] * 100; ?>%</td>
+                                <td><?php echo $sale['datetime']; ?></td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>

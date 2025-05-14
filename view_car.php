@@ -77,10 +77,42 @@
                         <li class="nav-item">
                             <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="admin/login.php">Admin</a>
-                        </li>
                     </ul>
+                </div>
+                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                            $user_id = $_SESSION['user_id'];
+                            $user_query = $conn->prepare("SELECT profile_picture FROM users WHERE id = ?");
+                            $user_query->bind_param("i", $user_id);
+                            $user_query->execute();
+                            $user_result = $user_query->get_result();
+                            $user_data = $user_result->fetch_assoc();
+                            $profile_picture = $user_data['profile_picture'] ?? 'default_profile.png'; // Default profile picture
+                        ?>
+                        <div class="text-center mb-3">
+                            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                        </div>
+                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                        <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
+                        <form method="post" action="">
+                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
+                        </form>
+                    <?php else: ?>
+                        <form method="post" action="">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
+                            <a href="register.php" class="btn btn-secondary">Registrarse</a>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>

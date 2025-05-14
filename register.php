@@ -41,16 +41,41 @@
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
         $user_username = $_POST['username'];
         $user_password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+        $user_email = $_POST['email'];
+        $user_fullname = $_POST['fullname'];
 
-        $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $user_username, $user_password);
+        // Handle profile picture upload
+        $targetDir = "userpfp/";
+        $fileInfo = pathinfo($_FILES["profile_picture"]["name"]);
+        $profile_picture_name = uniqid(); // Generate a unique filename
+        $fileExtension = strtolower($fileInfo['extension']);
+        $targetFile = $targetDir . $profile_picture_name . ".png";
 
-        if ($stmt->execute()) {
-            header("Location: index.php");
-            exit();
+        if (!is_writable($targetDir)) {
+            $error_message = "The profile picture folder is not writable. Please check folder permissions.";
         } else {
-            $error_message = "Error al registrar el usuario.";
+            if ($_FILES["profile_picture"]["error"] === UPLOAD_ERR_OK) {
+                if ($fileExtension === "png") {
+                    if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $targetFile)) {
+                        $sql = "INSERT INTO users (username, password, email, fullname, profile_picture) VALUES (?, ?, ?, ?, ?)";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bind_param("sssss", $user_username, $user_password, $user_email, $user_fullname, $targetFile);
+
+                        if ($stmt->execute()) {
+                            header("Location: index.php");
+                            exit();
+                        } else {
+                            $error_message = "Error al registrar el usuario.";
+                        }
+                    } else {
+                        $error_message = "Error al mover el archivo subido. Verifique los permisos de la carpeta.";
+                    }
+                } else {
+                    $error_message = "Solo se permiten archivos PNG para la foto de perfil.";
+                }
+            } else {
+                $error_message = "Error al subir el archivo: " . $_FILES["profile_picture"]["error"];
+            }
         }
     }
 ?>
@@ -62,6 +87,11 @@
         <title>Registro de Usuario</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
             .user-login-form {
                 display: none;
                 position: absolute;
@@ -87,12 +117,79 @@
         </style>
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.php">Inventario</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
+                        </li>
+                    </ul>
+                </div>
+                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                            $user_id = $_SESSION['user_id'];
+                            $user_query = $conn->prepare("SELECT profile_picture FROM users WHERE id = ?");
+                            $user_query->bind_param("i", $user_id);
+                            $user_query->execute();
+                            $user_result = $user_query->get_result();
+                            $user_data = $user_result->fetch_assoc();
+                            $profile_picture = $user_data['profile_picture'] ?? 'default_profile.png'; // Default profile picture
+                        ?>
+                        <div class="text-center mb-3">
+                            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                        </div>
+                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                        <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
+                        <form method="post" action="">
+                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
+                        </form>
+                    <?php else: ?>
+                        <?php if (isset($login_error)): ?>
+                            <div class="alert alert-danger"><?php echo $login_error; ?></div>
+                        <?php endif; ?>
+                        <form method="post" action="">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
+                            <a href="register.php" class="btn btn-secondary">Registrarse</a>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </nav>
         <div class="container mt-5">
             <h1 class="text-center">Registro de Usuario</h1>
             <?php if (isset($error_message)): ?>
                 <div class="alert alert-danger"><?php echo $error_message; ?></div>
             <?php endif; ?>
-            <form method="post" action="">
+            <form method="post" action="" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="fullname" class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" name="fullname" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
                 <div class="mb-3">
                     <label for="username" class="form-label">Usuario</label>
                     <input type="text" class="form-control" name="username" required>
@@ -100,6 +197,10 @@
                 <div class="mb-3">
                     <label for="password" class="form-label">Contraseña</label>
                     <input type="password" class="form-control" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="profile_picture" class="form-label">Foto de Perfil (solo PNG)</label>
+                    <input type="file" class="form-control" name="profile_picture" accept="image/png" required>
                 </div>
                 <button type="submit" name="register" class="btn btn-primary">Registrarse</button>
             </form>
