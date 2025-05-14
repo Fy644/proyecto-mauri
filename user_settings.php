@@ -83,6 +83,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Configuración de Usuario</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-color:rgb(211, 208, 208); /* Light gray background */
+            }
+        </style>
     </head>
     <body>
         <div class="container mt-5">

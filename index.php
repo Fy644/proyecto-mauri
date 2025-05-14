@@ -58,10 +58,21 @@
         <title>Agencia Elmas Capitos</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            body {
+                background-color: rgb(211, 208, 208); /* Light gray background */
+            }
+            .card {
+                background-color: rgb(240, 240, 240); /* Lighter gray for car elements */
+                border: none;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
             .card-img-top {
                 object-fit: cover;
                 width: 100%;
                 height: 200px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
             }
             .user-login-icon {
                 width: 32px;

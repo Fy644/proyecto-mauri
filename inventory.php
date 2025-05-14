@@ -21,10 +21,21 @@
         <title>Todos los Coches - Agencia Elmas Capitos</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <style>
+            body {
+                background-color: rgb(211, 208, 208); /* Light gray background */
+            }
+            .card {
+                background-color: rgb(240, 240, 240); /* Lighter gray for car elements */
+                border: none;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
             .card-img-top {
-                object-fit: cover; /* Ensure the image fills the area */
-                width: 100%; /* Full width of the card */
-                height: 200px; /* Fixed height for uniformity */
+                object-fit: cover;
+                width: 100%;
+                height: 200px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
             }
             .user-login-icon {
                 cursor: pointer;
@@ -84,27 +95,29 @@
         </nav>
         <div class="container mt-4">
             <h1 class="text-center">Todos los Coches</h1>
-            <div class="row">
-                <?php
-                    while ($result = $consulta->fetch_object()) {
-                        $imageSrc = "images/" . $result->img_name . ".png";
-                        $shortDescription = strlen($result->description) > 40 ? substr($result->description, 0, 40) . '...' : $result->description;
-                        $typeCapitalized = ucfirst($result->type); // Capitalize the first letter
-                        echo "<div class='col-md-4 mb-4'>";
-                        echo "<div class='card'>";
-                        echo "<img src='" . $imageSrc . "' class='card-img-top' alt='" . $result->name . "'>";
-                        echo "<div class='card-body'>";
-                        echo "<h5 class='card-title'>" . $result->name . " (" . $result->year . ")</h5>";
-                        echo "<p class='card-text'>" . $shortDescription . "</p>";
-                        echo "<p class='card-text'><strong>Precio:</strong> $" . $result->price . "</p>";
-                        echo "<p class='card-text'><strong>Tipo:</strong> " . $typeCapitalized . "</p>";
-                        echo "<p class='card-text'><strong>Usado:</strong> " . ($result->used ? "Sí" : "No") . "</p>";
-                        echo "<a href='view_car.php?id=" . $result->id . "' class='btn btn-primary'>Ver Detalles</a>";
-                        echo "</div>";
-                        echo "</div>";
-                        echo "</div>";
-                    }
-                ?>
+            <div class="car-section">
+                <div class="row">
+                    <?php
+                        while ($result = $consulta->fetch_object()) {
+                            $imageSrc = "images/" . $result->img_name . ".png";
+                            $shortDescription = strlen($result->description) > 40 ? substr($result->description, 0, 40) . '...' : $result->description;
+                            $typeCapitalized = ucfirst($result->type); // Capitalize the first letter
+                            echo "<div class='col-md-4 mb-4'>";
+                            echo "<div class='card'>";
+                            echo "<img src='" . $imageSrc . "' class='card-img-top' alt='" . $result->name . "'>";
+                            echo "<div class='card-body'>";
+                            echo "<h5 class='card-title'>" . $result->name . " (" . $result->year . ")</h5>";
+                            echo "<p class='card-text'>" . $shortDescription . "</p>";
+                            echo "<p class='card-text'><strong>Precio:</strong> $" . $result->price . "</p>";
+                            echo "<p class='card-text'><strong>Tipo:</strong> " . $typeCapitalized . "</p>";
+                            echo "<p class='card-text'><strong>Usado:</strong> " . ($result->used ? "Sí" : "No") . "</p>";
+                            echo "<a href='view_car.php?id=" . $result->id . "' class='btn btn-primary'>Ver Detalles</a>";
+                            echo "</div>";
+                            echo "</div>";
+                            echo "</div>";
+                        }
+                    ?>
+                </div>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-wEmeIV1mKuiNp12z93r+8mW9ckKnQe7f4pANCzW5yJlHCu6pC3e6pniU9FjF9ajs" crossorigin="anonymous"></script>

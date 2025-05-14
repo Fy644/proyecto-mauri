@@ -79,6 +79,9 @@
         <title>Comprar <?php echo htmlspecialchars($car['name']); ?></title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            body {
+                background-color:rgb(188, 188, 188); /* Light gray background */
+            }
             .expiration-date {
                 display: flex;
                 gap: 10px;

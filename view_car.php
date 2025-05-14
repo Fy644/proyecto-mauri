@@ -30,6 +30,9 @@
         <title><?php echo htmlspecialchars($car['name']); ?> - Detalles del Coche</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            body {
+                background-color:rgb(211, 208, 208); /* Light gray background */
+            }
             .car-image {
                 max-width: 100%;
                 height: auto;

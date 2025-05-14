@@ -47,6 +47,9 @@
         <title>Create Appointment</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            body {
+                background-color:rgb(211, 208, 208); /* Light gray background */
+            }
             .custom-datetime {
                 position: relative;
             }
