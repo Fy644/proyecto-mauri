@@ -25,6 +25,21 @@
     $user_result = $user_query->get_result();
     $user = $user_result->fetch_assoc();
 
+    // Fetch cars purchased by the user
+    $purchased_cars = [];
+    $purchased_query = $conn->prepare("
+        SELECT sales.id AS sale_id, carros.name AS car_name, carros.year AS car_year, sales.price AS car_price, sales.datetime AS purchase_date 
+        FROM sales 
+        INNER JOIN carros ON sales.id_car = carros.id 
+        WHERE sales.client_id = ? AND sales.deleted = 0
+    ");
+    $purchased_query->bind_param("i", $user_id);
+    $purchased_query->execute();
+    $purchased_result = $purchased_query->get_result();
+    while ($row = $purchased_result->fetch_assoc()) {
+        $purchased_cars[] = $row;
+    }
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_POST['logout'])) {
             session_destroy();
@@ -220,6 +235,25 @@
                 </div>
                 <button type="submit" name="update_password" class="btn btn-secondary">Actualizar Contraseña</button>
             </form>
+            <hr>
+            <h2 class="text-center mt-5">Coches Comprados</h2>
+            <?php if (!empty($purchased_cars)): ?>
+                <div class="row">
+                    <?php foreach ($purchased_cars as $car): ?>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?php echo htmlspecialchars($car['car_name']); ?> (<?php echo $car['car_year']; ?>)</h5>
+                                    <p class="card-text"><strong>Precio:</strong> $<?php echo number_format($car['car_price'], 2); ?></p>
+                                    <p class="card-text"><strong>Fecha de Compra:</strong> <?php echo htmlspecialchars($car['purchase_date']); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="text-center">No has comprado ningún coche.</p>
+            <?php endif; ?>
             <a href="index.php" class="btn btn-secondary mt-3">Volver al Inicio</a>
         </div>
         <a href="admin/login.php" class="admin-login">Admin Login</a>

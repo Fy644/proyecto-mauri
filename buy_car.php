@@ -69,7 +69,7 @@
     $user_data = [];
     if (isset($_SESSION['user_id'])) {
         $user_id = $_SESSION['user_id'];
-        $sql = "SELECT profile_picture FROM users WHERE id = ?";
+        $sql = "SELECT fullname, profile_picture FROM users WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -81,6 +81,7 @@
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['buy'])) {
         $client_name = $conn->real_escape_string(preg_replace("/[^a-zA-Z' ]/", '', substr($_POST['client_name'], 0, 50))); // Escape input to handle apostrophes
+        $client_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null; // Use logged-in user ID if available
         $credit_score = intval($_POST['credit_score']);
         $id_employee = intval($_POST['id_employee']);
         $monthly = isset($_POST['monthly']) ? 1 : 0;
@@ -96,8 +97,10 @@
         $interest_rate = $credit_score >= 700 ? 0.05 : ($credit_score >= 600 ? 0.1 : 0.15);
         $monthly_rate = $monthly ? (($price - $down_payment) * (1 + $interest_rate)) / $months : 0;
 
-        $sql = "INSERT INTO sales (id_car, client, employee_id, price, percent, down, monthly, months, card_number, expiration_month, expiration_year, pin, deleted) 
-                VALUES ('$car_id', '$client_name', '$id_employee', '$price', '$interest_rate', '$down_payment', '$monthly_rate', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', 0)";
+        $current_datetime = date('Y-m-d H:i:s'); // Get the current timestamp
+
+        $sql = "INSERT INTO sales (id_car, client, client_id, employee_id, price, percent, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetime, deleted) 
+                VALUES ('$car_id', '$client_name', " . ($client_id ? "'$client_id'" : "NULL") . ", '$id_employee', '$price', '$interest_rate', '$down_payment', '$monthly_rate', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', '$current_datetime', 0)";
 
         if ($conn->query($sql) === TRUE) {
             // Fetch employee name
@@ -258,7 +261,7 @@
             <form method="post" action="" id="buyCarForm">
                 <div class="mb-3">
                     <label for="client_name" class="form-label">Tu Nombre</label>
-                    <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios" required>
+                    <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios" value="<?php echo isset($user_data['fullname']) ? htmlspecialchars($user_data['fullname']) : ''; ?>" required>
                 </div>
                 <div class="mb-3">
                     <label for="credit_score" class="form-label">Puntaje de Crédito</label>
