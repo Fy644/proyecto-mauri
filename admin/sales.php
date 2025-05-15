@@ -68,65 +68,67 @@
         <script src="https://code.highcharts.com/highcharts.js"></script>
     </head>
     <body>
-        <div class="container mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1 class="text-center">Ventas</h1>
-                <a href="admin_panel.php" class="btn btn-secondary">Regresar</a>
-            </div>
-            <h2>Ventas Recientes</h2>
-            <?php if ($sales->num_rows > 0): ?>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Cliente</th>
-                            <th>Coche</th>
-                            <th>Empleado</th>
-                            <th>Precio</th>
-                            <th>Pago Inicial</th>
-                            <th>Pago Mensual</th>
-                            <th>Meses</th>
-                            <th>Tasa de Interés</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($sale = $sales->fetch_assoc()): ?>
+        <?php include 'navbar.php'; ?>
+        <div class="content">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="text-center">Ventas</h1>
+                    <a href="admin_panel.php" class="btn btn-secondary">Regresar</a>
+                </div>
+                <h2>Ventas Recientes</h2>
+                <?php if ($sales->num_rows > 0): ?>
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td><?php echo $sale['id']; ?></td>
-                                <td><?php echo htmlspecialchars($sale['client']); ?></td>
-                                <td><?php echo htmlspecialchars($sale['car_name']); ?></td>
-                                <td><?php echo htmlspecialchars($sale['employee_name']); ?></td>
-                                <td>$<?php echo number_format($sale['price'], 2); ?></td>
-                                <td>
-                                    <?php 
-                                        echo $sale['down'] > 0 ? "$" . number_format($sale['down'], 2) : "N/A"; 
-                                    ?>
-                                </td>
-                                <td>
-                                    <?php 
-                                        if ($sale['months'] > 0) {
-                                            echo "$" . number_format($sale['price'] / $sale['months'], 2);
-                                        } else {
-                                            echo "N/A";
-                                        }
-                                    ?>
-                                </td>
-                                <td><?php echo $sale['months'] > 0 ? $sale['months'] : "N/A"; ?></td>
-                                <td><?php echo $sale['percent'] * 100; ?>%</td>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th>Coche</th>
+                                <th>Empleado</th>
+                                <th>Precio</th>
+                                <th>Pago Inicial</th>
+                                <th>Pago Mensual</th>
+                                <th>Meses</th>
+                                <th>Tasa de Interés</th>
                             </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <div class="alert alert-info">No se encontraron ventas.</div>
-            <?php endif; ?>
+                        </thead>
+                        <tbody>
+                            <?php while ($sale = $sales->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?php echo $sale['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($sale['client']); ?></td>
+                                    <td><?php echo htmlspecialchars($sale['car_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($sale['employee_name']); ?></td>
+                                    <td>$<?php echo number_format($sale['price'], 2); ?></td>
+                                    <td>
+                                        <?php 
+                                            echo $sale['down'] > 0 ? "$" . number_format($sale['down'], 2) : "N/A"; 
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            if ($sale['months'] > 0) {
+                                                echo "$" . number_format($sale['price'] / $sale['months'], 2);
+                                            } else {
+                                                echo "N/A";
+                                            }
+                                        ?>
+                                    </td>
+                                    <td><?php echo $sale['months'] > 0 ? $sale['months'] : "N/A"; ?></td>
+                                    <td><?php echo $sale['percent'] * 100; ?>%</td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <div class="alert alert-info">No se encontraron ventas.</div>
+                <?php endif; ?>
 
-            <h2>Métricas</h2>
-            <div id="car-revenue" class="mb-4"></div>
-            <div id="total-sales" class="mb-4"></div>
-            <div id="employee-sales" class="mb-4"></div>
+                <h2>Métricas</h2>
+                <div id="car-revenue" class="mb-4"></div>
+                <div id="total-sales" class="mb-4"></div>
+                <div id="employee-sales" class="mb-4"></div>
+            </div>
         </div>
-
         <script>
             // Prepare data for Revenue by Car chart
             const carRevenueData = [

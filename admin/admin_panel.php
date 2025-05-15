@@ -39,41 +39,56 @@
                 text-decoration: underline;
                 color: #0056b3;
             }
+            .content {
+                margin-left: 250px;
+                padding: 20px;
+            }
+            .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
+            .user-login-form {
+                display: none;
+                position: fixed;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
         </style>
     </head>
     <body>
-        <div class="container mt-5">
-            <h1 class="text-center">¡Bienvenido, <?php echo htmlspecialchars($_SESSION['admin_username']); ?>!</h1>
-            <div class="admin-container">
-                <div class="admin-box">
-                    <a href="new_car.php">Agregar Nuevo Coche</a>
-                </div>
-                <div class="admin-box">
-                    <a href="edit_car.php">Editar Coche</a>
-                </div>
-                <div class="admin-box">
-                    <a href="new_admin.php">Agregar Nuevo Administrador</a>
-                </div>
-                <div class="admin-box">
-                    <a href="edit_admin.php">Editar Administrador</a>
-                </div>
-                <div class="admin-box">
-                    <a href="new_employee.php">Agregar Nuevo Empleado</a>
-                </div>
-                <div class="admin-box">
-                    <a href="edit_employee.php">Editar Empleado</a>
-                </div>
-                <div class="admin-box">
-                    <a href="view_appointments.php">Ver Citas</a>
-                </div>
-                <div class="admin-box">
-                    <a href="sales.php">Ver Ventas</a>
-                </div>
-                <div class="admin-box">
-                    <a href="logout.php">Cerrar Sesión</a>
+        <?php include 'navbar.php'; ?>
+        <div class="content">
+            <div class="container mt-4">
+                <h1 class="text-center">¡Bienvenido, <?php echo htmlspecialchars($_SESSION['admin_username']); ?>!</h1>
+                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <form method="post" action="user_login.php">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Usuario</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                    </form>
                 </div>
             </div>
         </div>
+        <script>
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

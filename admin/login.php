@@ -46,6 +46,15 @@
         <title>Inicio de Sesión - Administrador</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            body {
+                background-color: #f8f9fa; /* Light gray background */
+            }
+            .navbar {
+                background-color: #343a40; /* Dark gray for navbar */
+            }
+            .navbar-brand, .nav-link {
+                color: #ffffff !important; /* White text for navbar links */
+            }
             .form-container {
                 max-width: 400px;
                 margin: 0 auto;
@@ -54,31 +63,41 @@
                 border: 1px solid #ddd;
                 border-radius: 8px;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                background-color: #ffffff; /* White background for form */
             }
-            .form-label {
-                display: block;
-                margin-bottom: 5px;
-                font-weight: bold;
+            .btn-primary {
+                background-color: #007bff; /* Blue for primary buttons */
+                border: none;
             }
-            .form-control {
-                width: 100%;
+            .btn-primary:hover {
+                background-color: #0056b3; /* Darker blue on hover */
             }
-            #password-container {
-                display: flex;
-                align-items: center;
-                gap: 5px;
+            .btn-secondary {
+                background-color: #6c757d; /* Gray for secondary buttons */
+                border: none;
             }
-            #password {
-                flex: 1;
+            .btn-secondary:hover {
+                background-color: #5a6268; /* Darker gray on hover */
             }
-            .button-container {
-                display: flex;
-                justify-content: space-between;
-                gap: 10px;
+            .admin-login {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 0.9rem;
+                color: #6c757d;
+                text-decoration: none;
+            }
+            .admin-login:hover {
+                color: #343a40;
             }
         </style>
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="../index.php">Agencia Elmas Capitos</a>
+            </div>
+        </nav>
         <div class="container">
             <div class="form-container">
                 <h1 class="text-center">Inicio de Sesión</h1>
@@ -92,17 +111,9 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Contraseña</label>
-                        <div id="password-container">
-                            <input type="password" class="form-control" name="password" id="password" required>
-                            <button type="button" id="show-password-btn" class="btn btn-outline-secondary btn-sm" 
-                                onmousedown="document.getElementById('password').type='text'" 
-                                onmouseup="document.getElementById('password').type='password'" 
-                                onmouseleave="document.getElementById('password').type='password'">
-                                Mostrar
-                            </button>
-                        </div>
+                        <input type="password" class="form-control" name="password" required>
                     </div>
-                    <div class="button-container">
+                    <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary w-50">Iniciar Sesión</button>
                         <a href="../index.php" class="btn btn-secondary w-50">Regresar</a>
                     </div>

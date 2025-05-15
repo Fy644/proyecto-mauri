@@ -1,4 +1,5 @@
-<?php   
+<?php
+    session_start();
     $servername = "localhost";
     $username = "root";
     $password = "";
@@ -12,6 +13,56 @@
     }
 
     $consulta = $conn->query("SELECT * FROM `carros`");
+
+    $login_error = null;
+    $show_login_popup = false;
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
+        $user_username = $_POST['username'];
+        $user_password = $_POST['password'];
+
+        $sql = "SELECT * FROM users WHERE username = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $user_username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            if (password_verify($user_password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                header("Location: inventory.php");
+                exit();
+            } else {
+                $login_error = "Contraseña incorrecta.";
+                $show_login_popup = true;
+            }
+        } else {
+            $login_error = "Usuario no encontrado.";
+            $show_login_popup = true;
+        }
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
+        session_destroy();
+        header("Location: inventory.php");
+        exit();
+    }
+
+    // Fetch user data if logged in
+    $user_data = [];
+    if (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+        $sql = "SELECT * FROM users WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -19,13 +70,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Todos los Coches - Agencia Elmas Capitos</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
-                background-color: rgb(211, 208, 208); /* Light gray background */
+                background-color: #f8f9fa; /* Consistent light gray background */
             }
             .card {
-                background-color: rgb(240, 240, 240); /* Lighter gray for car elements */
+                background-color: #ffffff; /* White for card background */
                 border: none;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -37,25 +88,51 @@
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
             }
+            .navbar {
+                background-color: #343a40; /* Dark gray for navbar */
+            }
+            .navbar-brand, .nav-link {
+                color: #ffffff !important; /* White text for navbar links */
+            }
+            .btn-primary {
+                background-color: #007bff; /* Blue for primary buttons */
+                border: none;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3; /* Darker blue on hover */
+            }
             .user-login-icon {
+                width: 32px;
+                height: 32px;
                 cursor: pointer;
-                width: 30px;
-                height: 30px;
             }
             .user-login-form {
                 display: none;
-                position: absolute;
+                position: fixed;
                 top: 50px;
-                right: 10px;
-                background-color: white;
-                padding: 10px;
-                border: 1px solid #ccc;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+            .admin-login {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 0.9rem;
+                color: #6c757d;
+                text-decoration: none;
+            }
+            .admin-login:hover {
+                color: #343a40;
             }
         </style>
     </head>
     <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,24 +149,42 @@
                         <li class="nav-item">
                             <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="admin/login.php">Admin</a>
-                        </li>
                     </ul>
                 </div>
-                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <img src="<?php echo isset($_SESSION['user_id']) && !empty($user_data['profile_picture']) ? htmlspecialchars($user_data['profile_picture']) : 'Untitled.svg'; ?>" 
+                     alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
                 <div class="user-login-form" id="userLoginForm">
-                    <form method="post" action="user_login.php">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Usuario</label>
-                            <input type="text" class="form-control" name="username" required>
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <div class="text-center mb-3">
+                            <img src="<?php echo htmlspecialchars($user_data['profile_picture'] ?? 'Untitled.svg'); ?>" 
+                                 alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" name="password" required>
+                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                        <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
+                        <form method="post" action="">
+                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
+                        </form>
+                    <?php else: ?>
+                        <div class="text-center mb-3">
+                            <img src="Untitled.svg" 
+                                 alt="Default Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
                         </div>
-                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                    </form>
+                        <?php if ($login_error): ?>
+                            <div class="alert alert-danger"><?php echo $login_error; ?></div>
+                        <?php endif; ?>
+                        <form method="post" action="">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
+                            <a href="register.php" class="btn btn-secondary">Registrarse</a>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>
@@ -120,12 +215,20 @@
                 </div>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-wEmeIV1mKuiNp12z93r+8mW9ckKnQe7f4pANCzW5yJlHCu6pC3e6pniU9FjF9ajs" crossorigin="anonymous"></script>
+        <a href="admin/login.php" class="admin-login">Admin Login</a>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             function toggleUserLogin() {
                 const form = document.getElementById('userLoginForm');
                 form.style.display = form.style.display === 'block' ? 'none' : 'block';
             }
+
+            // Automatically show login popup if login error exists
+            <?php if ($show_login_popup): ?>
+                document.addEventListener('DOMContentLoaded', function () {
+                    toggleUserLogin();
+                });
+            <?php endif; ?>
         </script>
     </body>
 </html>

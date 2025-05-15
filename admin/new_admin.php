@@ -40,30 +40,30 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
-        <div class="container mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <?php include 'navbar.php'; ?>
+        <div class="content">
+            <div class="container mt-4">
                 <h1 class="text-center">Agregar Nuevo Administrador</h1>
-                <a href="admin_panel.php" class="btn btn-secondary">Regresar</a>
+                <?php if (isset($success_message)): ?>
+                    <div class="alert alert-success"><?php echo $success_message; ?></div>
+                <?php endif; ?>
+                <?php if (isset($error_message)): ?>
+                    <div class="alert alert-danger"><?php echo $error_message; ?></div>
+                <?php endif; ?>
+                <form method="post" action="">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuario</label>
+                        <input type="text" class="form-control" name="username" maxlength="50" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" name="password" maxlength="255" required>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Agregar Administrador</button>
+                    </div>
+                </form>
             </div>
-            <?php if (isset($success_message)): ?>
-                <div class="alert alert-success"><?php echo $success_message; ?></div>
-            <?php endif; ?>
-            <?php if (isset($error_message)): ?>
-                <div class="alert alert-danger"><?php echo $error_message; ?></div>
-            <?php endif; ?>
-            <form method="post" action="">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Usuario</label>
-                    <input type="text" class="form-control" name="username" maxlength="50" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" name="password" maxlength="255" required>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Agregar Administrador</button>
-                </div>
-            </form>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

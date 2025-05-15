@@ -59,72 +59,73 @@
     }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Agregar Nuevo Carro</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
-        <div class="container mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <?php include 'navbar.php'; ?>
+        <div class="content">
+            <div class="container mt-4">
                 <h1 class="text-center">Agregar Nuevo Carro</h1>
-                <a href="admin_panel.php" class="btn btn-secondary">Regresar</a>
+                <!-- Page content here -->
+                <?php if (isset($success_message)): ?>
+                    <div class="alert alert-success"><?php echo $success_message; ?></div>
+                <?php endif; ?>
+                <?php if (isset($error_message)): ?>
+                    <div class="alert alert-danger"><?php echo $error_message; ?></div>
+                <?php endif; ?>
+                <form method="post" action="" enctype="multipart/form-data" id="carForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre del Carro</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Precio</label>
+                        <input type="number" class="form-control" name="price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Tipo</label>
+                        <select name="type" class="form-select" required>
+                            <option value="sport">Sport</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="truck">Truck</option>
+                            <option value="van">Van</option>
+                            <option value="hatchback">Hatchback</option>
+                            <option value="coupe">Coupe</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center gap-3">
+                        <div>
+                            <label for="featured" class="form-check-label">Destacado</label>
+                            <input type="checkbox" class="form-check-input" name="featured">
+                        </div>
+                        <div>
+                            <label for="used" class="form-check-label">Usado</label>
+                            <input type="checkbox" class="form-check-input" name="used">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripcion</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="year" class="form-label">Año</label>
+                        <input type="number" class="form-control" name="year" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Subir Foto (solo PNG)</label>
+                        <input type="file" class="form-control" name="image" accept="image/png" required>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Agregar Carro</button>
+                    </div>
+                </form>
             </div>
-            <?php if (isset($success_message)): ?>
-                <div class="alert alert-success"><?php echo $success_message; ?></div>
-            <?php endif; ?>
-            <?php if (isset($error_message)): ?>
-                <div class="alert alert-danger"><?php echo $error_message; ?></div>
-            <?php endif; ?>
-            <form method="post" action="" enctype="multipart/form-data" id="carForm">
-                <div class="mb-3">
-                    <label for="name" class="form-label">Nombre del Carro</label>
-                    <input type="text" class="form-control" name="name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="price" class="form-label">Precio</label>
-                    <input type="number" class="form-control" name="price" required>
-                </div>
-                <div class="mb-3">
-                    <label for="type" class="form-label">Tipo</label>
-                    <select name="type" class="form-select" required>
-                        <option value="sport">Sport</option>
-                        <option value="sedan">Sedan</option>
-                        <option value="suv">SUV</option>
-                        <option value="truck">Truck</option>
-                        <option value="van">Van</option>
-                        <option value="hatchback">Hatchback</option>
-                        <option value="coupe">Coupe</option>
-                    </select>
-                </div>
-                <div class="mb-3 d-flex align-items-center gap-3">
-                    <div>
-                        <label for="featured" class="form-check-label">Destacado</label>
-                        <input type="checkbox" class="form-check-input" name="featured">
-                    </div>
-                    <div>
-                        <label for="used" class="form-check-label">Usado</label>
-                        <input type="checkbox" class="form-check-input" name="used">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Descripcion</label>
-                    <textarea class="form-control" name="description" rows="3" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="year" class="form-label">Año</label>
-                    <input type="number" class="form-control" name="year" required>
-                </div>
-                <div class="mb-3">
-                    <label for="image" class="form-label">Subir Foto (solo PNG)</label>
-                    <input type="file" class="form-control" name="image" accept="image/png" required>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Agregar Carro</button>
-                </div>
-            </form>
         </div>
         <script>
             document.getElementById('carForm').addEventListener('submit', function (event) {

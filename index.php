@@ -49,6 +49,20 @@
         header("Location: index.php");
         exit();
     }
+
+    // Fetch user data if logged in
+    $user_data = [];
+    if (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+        $sql = "SELECT profile_picture FROM users WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -59,10 +73,10 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
-                background-color: rgb(211, 208, 208); /* Light gray background */
+                background-color: #f8f9fa; /* Consistent light gray background */
             }
             .card {
-                background-color: rgb(240, 240, 240); /* Lighter gray for car elements */
+                background-color: #ffffff; /* White for card background */
                 border: none;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -74,6 +88,19 @@
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
             }
+            .navbar {
+                background-color: #343a40; /* Dark gray for navbar */
+            }
+            .navbar-brand, .nav-link {
+                color: #ffffff !important; /* White text for navbar links */
+            }
+            .btn-primary {
+                background-color: #007bff; /* Blue for primary buttons */
+                border: none;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3; /* Darker blue on hover */
+            }
             .user-login-icon {
                 width: 32px;
                 height: 32px;
@@ -81,7 +108,7 @@
             }
             .user-login-form {
                 display: none;
-                position: absolute;
+                position: fixed;
                 top: 50px;
                 right: 20px;
                 background: white;
@@ -93,18 +120,19 @@
             }
             .admin-login {
                 position: fixed;
-                bottom: 20px;
-                right: 20px;
-                cursor: pointer;
-                opacity: 0;
+                bottom: 10px;
+                left: 10px;
+                font-size: 0.9rem;
+                color: #6c757d;
+                text-decoration: none;
             }
             .admin-login:hover {
-                opacity: 1;
+                color: #343a40;
             }
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -123,20 +151,13 @@
                         </li>
                     </ul>
                 </div>
-                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <img src="<?php echo isset($_SESSION['user_id']) && !empty($user_data['profile_picture']) ? htmlspecialchars($user_data['profile_picture']) : 'Untitled.svg'; ?>" 
+                     alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
                 <div class="user-login-form" id="userLoginForm">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <?php
-                            $user_id = $_SESSION['user_id'];
-                            $user_query = $conn->prepare("SELECT profile_picture FROM users WHERE id = ?");
-                            $user_query->bind_param("i", $user_id);
-                            $user_query->execute();
-                            $user_result = $user_query->get_result();
-                            $user_data = $user_result->fetch_assoc();
-                            $profile_picture = $user_data['profile_picture'] ?? 'default_profile.png'; // Default profile picture
-                        ?>
                         <div class="text-center mb-3">
-                            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                            <img src="<?php echo htmlspecialchars($user_data['profile_picture'] ?? 'Untitled.svg'); ?>" 
+                                 alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
                         </div>
                         <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
                         <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
@@ -144,6 +165,10 @@
                             <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
                         </form>
                     <?php else: ?>
+                        <div class="text-center mb-3">
+                            <img src="Untitled.svg" 
+                                 alt="Default Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                        </div>
                         <?php if ($login_error): ?>
                             <div class="alert alert-danger"><?php echo $login_error; ?></div>
                         <?php endif; ?>
@@ -187,7 +212,7 @@
                 ?>
             </div>
         </div>
-        <img src="Untitled.svg" alt="Admin Login" class="admin-login" onclick="window.location.href='admin/login.php'">
+        <a href="admin/login.php" class="admin-login">Admin Login</a>
         <script>
             function toggleUserLogin() {
                 const form = document.getElementById('userLoginForm');

@@ -26,6 +26,12 @@
     $user = $user_result->fetch_assoc();
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (isset($_POST['logout'])) {
+            session_destroy();
+            header("Location: index.php");
+            exit();
+        }
+
         if (isset($_POST['update_profile'])) {
             $new_email = $_POST['email'];
             $new_fullname = $_POST['fullname'];
@@ -85,11 +91,97 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
-                background-color:rgb(211, 208, 208); /* Light gray background */
+                background-color: #f8f9fa; /* Light gray background */
+            }
+            .navbar {
+                background-color: #343a40; /* Dark gray for navbar */
+            }
+            .navbar-brand, .nav-link {
+                color: #ffffff !important; /* White text for navbar links */
+            }
+            .btn-primary {
+                background-color: #007bff; /* Blue for primary buttons */
+                border: none;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3; /* Darker blue on hover */
+            }
+            .btn-secondary {
+                background-color: #6c757d; /* Gray for secondary buttons */
+                border: none;
+            }
+            .btn-secondary:hover {
+                background-color: #5a6268; /* Darker gray on hover */
+            }
+            .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
+            .user-login-form {
+                display: none;
+                position: absolute;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+            .admin-login {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 0.9rem;
+                color: #6c757d;
+                text-decoration: none;
+            }
+            .admin-login:hover {
+                color: #343a40;
+            }
+            .rounded-circle {
+                width: 80px; /* Match size with index/inventory pages */
+                height: 80px;
+                object-fit: cover;
             }
         </style>
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory.php">Inventario</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
+                        </li>
+                    </ul>
+                </div>
+                <img src="<?php echo isset($user['profile_picture']) ? htmlspecialchars($user['profile_picture']) : 'Untitled.svg'; ?>" 
+                     alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
+                <div class="user-login-form" id="userLoginForm">
+                    <div class="text-center mb-3">
+                        <img src="<?php echo htmlspecialchars($user['profile_picture'] ?? 'Untitled.svg'); ?>" 
+                             alt="Profile Picture" class="rounded-circle">
+                    </div>
+                    <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                    <form method="post" action="">
+                        <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
         <div class="container mt-5">
             <h1 class="text-center">Configuración de Usuario</h1>
             <p class="text-center">Bienvenido, <?php echo htmlspecialchars($user['username']); ?>.</p>
@@ -103,7 +195,7 @@
                 <?php
                     $profile_picture = $user['profile_picture'] ?? 'default_profile.png'; // Default profile picture
                 ?>
-                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="rounded-circle">
             </div>
             <form method="post" action="" enctype="multipart/form-data">
                 <div class="mb-3">
@@ -130,6 +222,13 @@
             </form>
             <a href="index.php" class="btn btn-secondary mt-3">Volver al Inicio</a>
         </div>
+        <a href="admin/login.php" class="admin-login">Admin Login</a>
+        <script>
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>
