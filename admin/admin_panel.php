@@ -67,20 +67,6 @@
         <div class="content">
             <div class="container mt-4">
                 <h1 class="text-center">¡Bienvenido, <?php echo htmlspecialchars($_SESSION['admin_username']); ?>!</h1>
-                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
-                <div class="user-login-form" id="userLoginForm">
-                    <form method="post" action="user_login.php">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Usuario</label>
-                            <input type="text" class="form-control" name="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                    </form>
-                </div>
             </div>
         </div>
         <script>

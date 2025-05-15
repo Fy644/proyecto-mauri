@@ -16,43 +16,43 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $name = $_POST['name'];
-        $price = $_POST['price'];
-        $type = $_POST['type'];
+        $name = substr($_POST['name'], 0, 32); // Limit to 32 characters
+        $price = intval($_POST['price']);
+        $type = substr($_POST['type'], 0, 16); // Limit to 16 characters
         $featured = isset($_POST['featured']) ? 1 : 0;
-        $description = $_POST['description'];
-        $year = $_POST['year'];
-        $used = isset($_POST['used']) ? 1 : 0; // New 'used' attribute
+        $description = substr($_POST['description'], 0, 65535); // Limit to TEXT size
+        $year = intval($_POST['year']);
+        $used = isset($_POST['used']) ? 1 : 0;
 
-        // Handle image upload
-        $targetDir = "../images/";
-        $fileInfo = pathinfo($_FILES["image"]["name"]);
-        $img_name = $fileInfo['filename']; // Get filename without extension
-        $fileExtension = strtolower($fileInfo['extension']);
-        $targetFile = $targetDir . $img_name . ".png";
-
-        // Check if the target directory is writable
-        if (!is_writable($targetDir)) {
-            $error_message = "The images folder is not writable. Please check folder permissions.";
+        // Validate inputs
+        if (empty($name) || $price <= 0 || empty($type) || empty($description) || $year <= 0) {
+            $error_message = "Todos los campos son obligatorios y deben ser válidos.";
         } else {
-            // Validate file type
+            // Handle image upload
+            $targetDir = "../images/";
+            $fileInfo = pathinfo($_FILES["image"]["name"]);
+            $img_name = substr($fileInfo['filename'], 0, 32); // Limit to 32 characters
+            $fileExtension = strtolower($fileInfo['extension']);
+            $targetFile = $targetDir . $img_name . ".png";
+
             if ($fileExtension !== "png") {
-                $error_message = "Only PNG files are allowed.";
+                $error_message = "Solo se permiten archivos PNG.";
             } else {
                 if ($_FILES["image"]["error"] === UPLOAD_ERR_OK) {
                     if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                        $sql = "INSERT INTO carros (name, price, type, featured, description, img_name, year, used, deleted) VALUES ('$name', '$price', '$type', '$featured', '$description', '$img_name', '$year', '$used', 0)";
+                        $sql = "INSERT INTO carros (name, price, type, featured, description, img_name, year, used, deleted) 
+                                VALUES ('$name', '$price', '$type', '$featured', '$description', '$img_name', '$year', '$used', 0)";
 
                         if ($conn->query($sql) === TRUE) {
-                            $success_message = "New car added successfully";
+                            $success_message = "Nuevo coche agregado exitosamente.";
                         } else {
                             $error_message = "Error: " . $sql . "<br>" . $conn->error;
                         }
                     } else {
-                        $error_message = "Error moving the uploaded file. Check folder permissions.";
+                        $error_message = "Error al mover el archivo subido. Verifica los permisos de la carpeta.";
                     }
                 } else {
-                    $error_message = "File upload error: " . $_FILES["image"]["error"];
+                    $error_message = "Error al subir el archivo: " . $_FILES["image"]["error"];
                 }
             }
         }

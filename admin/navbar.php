@@ -20,6 +20,7 @@
                 top: 0;
                 bottom: 0;
                 left: 0;
+                z-index: 1050; /* Ensure it overlays content */
             }
             .sidebar-header {
                 padding: 15px;
@@ -55,6 +56,7 @@
                     top: 0;
                     left: 0;
                     transform: translateY(-100%);
+                    z-index: 1050; /* Ensure it overlays content */
                 }
                 .sidebar.collapsed {
                     transform: translateY(0);
@@ -62,6 +64,7 @@
                 .content {
                     margin-left: 0;
                     margin-top: 50px; /* Adjust for the height of the navbar */
+                    z-index: 1; /* Ensure content is below the sidebar */
                 }
                 .toggle-btn {
                     display: block; /* Show toggle button on mobile */
@@ -74,7 +77,7 @@
                     padding: 6px 10px; /* Smaller size */
                     border-radius: 5px;
                     cursor: pointer;
-                    z-index: 1000;
+                    z-index: 1100; /* Ensure it appears over the menu */
                     font-size: 0.9rem; /* Slightly smaller font size */
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                 }

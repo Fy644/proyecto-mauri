@@ -20,7 +20,7 @@
     // Fetch the 5 most recent sales
     $sales = $conn->query("
         SELECT sales.id, sales.client, sales.price, sales.down, sales.monthly, sales.months, sales.percent, 
-               carros.name AS car_name, employees.name AS employee_name 
+               sales.datetime, carros.name AS car_name, employees.name AS employee_name 
         FROM sales 
         INNER JOIN carros ON sales.id_car = carros.id 
         INNER JOIN employees ON sales.employee_id = employees.id 
@@ -28,6 +28,10 @@
         ORDER BY sales.id DESC
         LIMIT 5
     ");
+
+    if (!$sales) {
+        die("Error al obtener las ventas: " . $conn->error);
+    }
 
     // Fetch data for Highcharts
     $car_revenue = $conn->query("
@@ -89,6 +93,7 @@
                                 <th>Pago Mensual</th>
                                 <th>Meses</th>
                                 <th>Tasa de Interés</th>
+                                <th>Fecha de Venta</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -115,6 +120,7 @@
                                     </td>
                                     <td><?php echo $sale['months'] > 0 ? $sale['months'] : "N/A"; ?></td>
                                     <td><?php echo $sale['percent'] * 100; ?>%</td>
+                                    <td><?php echo htmlspecialchars($sale['datetime']); ?></td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>

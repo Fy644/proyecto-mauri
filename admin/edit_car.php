@@ -50,42 +50,45 @@
             $year = intval($_POST['year']);
             $used = isset($_POST['used']) ? 1 : 0;
 
-            // Retain the original image name if no new file is uploaded
-            $img_name = $car['img_name']; // Default to the current image name
-            if (!empty($_FILES['image']['name'])) {
-                $targetDir = "../images/";
-                $fileInfo = pathinfo($_FILES["image"]["name"]);
-                $img_name = substr($fileInfo['filename'], 0, 32); // Limit to 32 characters
-                $fileExtension = strtolower($fileInfo['extension']);
-                $targetFile = $targetDir . $img_name . ".png";
+            // Validate inputs
+            if (empty($name) || $price <= 0 || empty($type) || empty($description) || $year <= 0) {
+                $error_message = "Todos los campos son obligatorios y deben ser válidos.";
+            } else {
+                // Retain the original image name if no new file is uploaded
+                $img_name = $car['img_name']; // Default to the current image name
+                if (!empty($_FILES['image']['name'])) {
+                    $targetDir = "../images/";
+                    $fileInfo = pathinfo($_FILES["image"]["name"]);
+                    $img_name = substr($fileInfo['filename'], 0, 32); // Limit to 32 characters
+                    $fileExtension = strtolower($fileInfo['extension']);
+                    $targetFile = $targetDir . $img_name . ".png";
 
-                if ($fileExtension !== "png") {
-                    $error_message = "Solo se permiten archivos PNG.";
-                } else {
-                    if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                        // Successfully uploaded new image
+                    if ($fileExtension !== "png") {
+                        $error_message = "Solo se permiten archivos PNG.";
                     } else {
-                        $error_message = "Error al mover el archivo subido. Verifica los permisos de la carpeta.";
+                        if (!move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
+                            $error_message = "Error al mover el archivo subido. Verifica los permisos de la carpeta.";
+                        }
                     }
                 }
-            }
 
-            $sql = "UPDATE carros SET 
-                    name = '$name', 
-                    price = '$price', 
-                    type = '$type', 
-                    featured = '$featured', 
-                    description = '$description', 
-                    year = '$year', 
-                    used = '$used', 
-                    img_name = '$img_name' 
-                    WHERE id = $car_id";
+                $sql = "UPDATE carros SET 
+                        name = '$name', 
+                        price = '$price', 
+                        type = '$type', 
+                        featured = '$featured', 
+                        description = '$description', 
+                        year = '$year', 
+                        used = '$used', 
+                        img_name = '$img_name' 
+                        WHERE id = $car_id";
 
-            if ($conn->query($sql) === TRUE) {
-                $success_message = "Coche actualizado exitosamente.";
-                $car = $conn->query("SELECT * FROM carros WHERE id = $car_id")->fetch_assoc(); // Refresh car data
-            } else {
-                $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                if ($conn->query($sql) === TRUE) {
+                    $success_message = "Coche actualizado exitosamente.";
+                    $car = $conn->query("SELECT * FROM carros WHERE id = $car_id")->fetch_assoc(); // Refresh car data
+                } else {
+                    $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                }
             }
         }
     }
