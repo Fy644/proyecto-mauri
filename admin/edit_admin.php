@@ -67,25 +67,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Editar Administrador</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            .user-login-icon {
-                width: 32px;
-                height: 32px;
-                cursor: pointer;
-            }
-            .user-login-form {
-                display: none;
-                position: fixed;
-                top: 50px;
-                right: 20px;
-                background: white;
-                border: 1px solid #ddd;
-                padding: 15px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                z-index: 1000;
-            }
-        </style>
     </head>
     <body>
         <?php include 'navbar.php'; ?>
@@ -95,19 +76,6 @@
                     <h1 class="text-center">Editar Administrador</h1>
                     <a href="admin_panel.php" class="btn btn-secondary">Regresar</a>
                 </div>
-                <img src="Untitled.svg" alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
-                <div class="user-login-form" id="userLoginForm">
-                    <form method="post" action="user_login.php">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Usuario</label>
-                            <input type="text" class="form-control" name="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                    </form>
                 </div>
                 <?php if (isset($success_message)): ?>
                     <div class="alert alert-success"><?php echo $success_message; ?></div>

@@ -138,6 +138,17 @@
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 z-index: 1000;
             }
+            .admin-login {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 0.9rem;
+                color: #6c757d;
+                text-decoration: none;
+            }
+            .admin-login:hover {
+                color: #343a40;
+            }
         </style>
     </head>
     <body>
@@ -243,6 +254,8 @@
                 </div>
             </form>
         </div>
+                <a href="admin/login.php" class="admin-login">Admin Login</a>
+
         <script>
             function toggleUserLogin() {
                 const form = document.getElementById('userLoginForm');
