@@ -1,5 +1,11 @@
 <?php
     session_start();
+
+    // Enable error reporting for debugging
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+
     $servername = "localhost";
     $username = "root";
     $password = "";
@@ -35,9 +41,6 @@
 
         $sql = "SELECT * FROM users WHERE username = ?";
         $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            die("Error: " . $conn->error);
-        }
         $stmt->bind_param("s", $user_username);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -67,40 +70,41 @@
 
     // Fetch user data if logged in
     $user_data = [];
+    $client_id = 0; // Default client_id to 0
     if (isset($_SESSION['user_id'])) {
         $user_id = $_SESSION['user_id'];
-        $sql = "SELECT fullname, profile_picture FROM users WHERE id = ?";
+        $sql = "SELECT id, fullname, profile_picture FROM users WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
             $user_data = $result->fetch_assoc();
+            $client_id = $user_data['id']; // Set client_id to the logged-in user's ID
         }
     }
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['buy'])) {
-        $client_name = $conn->real_escape_string(preg_replace("/[^a-zA-Z' ]/", '', substr($_POST['client_name'], 0, 50))); // Escape input to handle apostrophes
-        $client_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null; // Use logged-in user ID if available
-        $credit_score = intval($_POST['credit_score']);
+        // Capture submitted form data
+        $client_name = $conn->real_escape_string($_POST['client_name']);
         $id_employee = intval($_POST['id_employee']);
-        $monthly = isset($_POST['monthly']) ? 1 : 0;
-        $months = $monthly ? intval($_POST['months']) : 0;
-        $card_number = $_POST['card_number'];
-        $expiration_month = intval(ltrim($_POST['expiration_month'], '0')); // Remove leading zeros
+        $id_car = intval($_POST['id_car']);
+        $price = floatval($_POST['price']);
+        $monthly = isset($_POST['monthly']) ? intval($_POST['monthly']) : 0; // Default to 0 if not set
+        $months = isset($_POST['months']) && $_POST['months'] !== '' ? intval($_POST['months']) : 0; // Default to 0 if not set
+        $card_number = $conn->real_escape_string($_POST['card_number']);
+        $expiration_month = intval($_POST['expiration_month']);
         $expiration_year = intval($_POST['expiration_year']);
-        $pin = intval($_POST['pin']); // Ensure PIN is numeric
+        $pin = intval($_POST['pin']);
 
-        // Calculate down payment, interest, and monthly rate
-        $price = $car['price'];
-        $down_payment = $credit_score >= 700 ? $price * 0.1 : ($credit_score >= 600 ? $price * 0.2 : $price * 0.3);
-        $interest_rate = $credit_score >= 700 ? 0.05 : ($credit_score >= 600 ? 0.1 : 0.15);
-        $monthly_rate = $monthly ? (($price - $down_payment) * (1 + $interest_rate)) / $months : 0;
+        // Calculate down payment and monthly rate
+        $down_payment = $price * 0.1; // Fixed 10% down payment
+        $monthly_rate = $monthly ? ($price - $down_payment) / $months : 0;
 
-        $current_datetime = date('Y-m-d H:i:s'); // Get the current timestamp
-
-        $sql = "INSERT INTO sales (id_car, client, client_id, employee_id, price, percent, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetime, deleted) 
-                VALUES ('$car_id', '$client_name', " . ($client_id ? "'$client_id'" : "NULL") . ", '$id_employee', '$price', '$interest_rate', '$down_payment', '$monthly_rate', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', '$current_datetime', 0)";
+        // Debugging: Log the SQL query
+        $sql = "INSERT INTO sales (id_car, client, employee_id, client_id, price, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetimePurchase, deleted) 
+                VALUES ('$id_car', '$client_name', '$id_employee', '$client_id', '$price', '$down_payment', '$monthly', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', NOW(), 0)";
+        error_log("SQL Query: $sql");
 
         if ($conn->query($sql) === TRUE) {
             // Fetch employee name
@@ -123,7 +127,7 @@
             header("Location: recipt.php");
             exit();
         } else {
-            $error_message = "Error: " . $sql . "<br>" . $conn->error;
+            $error_message = "Error al guardar la compra: " . $conn->error;
         }
     }
 ?>
@@ -252,20 +256,13 @@
         </nav>
         <div class="container mt-5">
             <h1 class="text-center">Comprar <?php echo htmlspecialchars($car['name']); ?></h1>
-            <?php if (isset($success_message)): ?>
-                <div class="alert alert-success"><?php echo $success_message; ?></div>
-            <?php endif; ?>
             <?php if (isset($error_message)): ?>
                 <div class="alert alert-danger"><?php echo $error_message; ?></div>
             <?php endif; ?>
-            <form method="post" action="" id="buyCarForm">
+            <form method="post" action="">
                 <div class="mb-3">
                     <label for="client_name" class="form-label">Tu Nombre</label>
                     <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios" value="<?php echo isset($user_data['fullname']) ? htmlspecialchars($user_data['fullname']) : ''; ?>" required>
-                </div>
-                <div class="mb-3">
-                    <label for="credit_score" class="form-label">Puntaje de Crédito</label>
-                    <input type="number" class="form-control" name="credit_score" min="300" max="850" required>
                 </div>
                 <div class="mb-3">
                     <label for="id_employee" class="form-label">Empleado que te atendió</label>
@@ -292,33 +289,25 @@
                 </div>
                 <div class="mb-3 expiration-date">
                     <label for="expiration_month" class="form-label">Expiración:</label>
-                    <input type="text" class="form-control" name="expiration_month" maxlength="2" pattern="0?[1-9]|1[0-2]" title="Mes (1-12)" placeholder="MM" required>
+                    <input type="number" class="form-control" name="expiration_month" min="1" max="12" placeholder="MM" required>
                     <input type="number" class="form-control" name="expiration_year" min="<?php echo date('Y'); ?>" placeholder="YYYY" required>
                 </div>
                 <div class="mb-3">
                     <label for="pin" class="form-label">PIN de la Tarjeta</label>
                     <input type="password" class="form-control" name="pin" maxlength="4" pattern="\d{4}" title="El PIN debe tener 4 dígitos" required>
                 </div>
-                <button type="submit" class="btn btn-success">Comprar Ahora</button>
+                <input type="hidden" name="id_car" value="<?php echo $car['id']; ?>">
+                <input type="hidden" name="price" value="<?php echo $car['price']; ?>">
+                <button type="submit" name="buy" class="btn btn-success">Comprar Ahora</button>
                 <a href="view_car.php?id=<?php echo $car['id']; ?>" class="btn btn-secondary">Cancelar</a>
             </form>
         </div>
-        <a href="admin/login.php" class="admin-login">Admin Login</a>
         <script>
             function toggleMonthlyOptions() {
                 const monthlyOptions = document.getElementById('monthly-options');
                 const monthlyCheckbox = document.getElementById('monthly');
                 monthlyOptions.style.display = monthlyCheckbox.checked ? 'block' : 'none';
             }
-
-            // Ensure card number input has exactly 16 digits before submitting
-            document.getElementById('buyCarForm').addEventListener('submit', function (event) {
-                const cardNumberInput = document.getElementById('card_number');
-                if (cardNumberInput.value.length !== 16) {
-                    alert("El número de tarjeta debe tener exactamente 16 dígitos.");
-                    event.preventDefault();
-                }
-            });
 
             function toggleUserLogin() {
                 const form = document.getElementById('userLoginForm');

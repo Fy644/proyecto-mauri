@@ -1,6 +1,11 @@
 <?php
     session_start();
 
+    // Enable error reporting for debugging
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+
     if (!isset($_SESSION['user_id'])) {
         header("Location: index.php");
         exit();
@@ -28,7 +33,8 @@
     // Fetch cars purchased by the user
     $purchased_cars = [];
     $purchased_query = $conn->prepare("
-        SELECT sales.id AS sale_id, carros.name AS car_name, carros.year AS car_year, sales.price AS car_price, sales.datetime AS purchase_date 
+        SELECT sales.id AS sale_id, carros.name AS car_name, carros.year AS car_year, carros.img_name AS car_image, 
+               sales.price AS car_price, sales.datetimePurchase AS purchase_date 
         FROM sales 
         INNER JOIN carros ON sales.id_car = carros.id 
         WHERE sales.client_id = ? AND sales.deleted = 0
@@ -161,6 +167,12 @@
                 height: 80px;
                 object-fit: cover;
             }
+            .car-image {
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                border-radius: 8px;
+            }
         </style>
     </head>
     <body>
@@ -242,6 +254,7 @@
                     <?php foreach ($purchased_cars as $car): ?>
                         <div class="col-md-4 mb-4">
                             <div class="card">
+                                <img src="images/<?php echo htmlspecialchars($car['car_image']); ?>.png" alt="<?php echo htmlspecialchars($car['car_name']); ?>" class="car-image">
                                 <div class="card-body">
                                     <h5 class="card-title"><?php echo htmlspecialchars($car['car_name']); ?> (<?php echo $car['car_year']; ?>)</h5>
                                     <p class="card-text"><strong>Precio:</strong> $<?php echo number_format($car['car_price'], 2); ?></p>
