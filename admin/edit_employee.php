@@ -46,12 +46,13 @@
             $level = $_POST['level'];
             $phone = $_POST['phone'];
             $rfc = $_POST['rfc'];
+            $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null;
 
             $sql = "UPDATE employees SET 
                     name = '$name', 
                     level = '$level',
                     phone = '$phone',
-                    rfc = '$rfc'
+                    rfc = '$rfc'" . ($password ? ", password = '$password'" : "") . "
                     WHERE id = $employee_id";
 
             if ($conn->query($sql) === TRUE) {
@@ -120,6 +121,10 @@
                         <div class="mb-3">
                             <label for="rfc" class="form-label">RFC</label>
                             <input type="text" class="form-control" name="rfc" maxlength="13" title="El RFC debe tener un máximo de 13 caracteres" value="<?php echo htmlspecialchars($employee['rfc']); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Nueva Contraseña (opcional)</label>
+                            <input type="password" class="form-control" name="password">
                         </div>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Actualizar Empleado</button>

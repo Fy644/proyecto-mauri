@@ -116,6 +116,7 @@ CREATE TABLE `employees` (
   `level` int(11) NOT NULL,
   `rfc` varchar(13) NOT NULL,
   `phone` bigint(20) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   `deleted` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -123,18 +124,18 @@ CREATE TABLE `employees` (
 -- Dumping data for table `employees`
 --
 
-INSERT INTO `employees` (`id`, `name`, `level`, `rfc`, `phone`, `deleted`) VALUES
-(1, 'Bob Johnny', 0, 'abcdefghijklm', 4495810546, 0),
-(2, 'Alice Johnson', 1, '', 0, 0),
-(3, 'Bob Smith', 2, '', 0, 0),
-(4, 'Charlie Brown', 3, '', 0, 0),
-(5, 'Diana Evans', 1, '', 0, 0),
-(6, 'Ethan Foster', 2, '', 0, 0),
-(7, 'Fiona Green', 3, '', 0, 0),
-(8, 'George Harris', 1, '', 0, 0),
-(9, 'Hannah White', 2, '', 0, 0),
-(10, 'Ian King', 3, '', 0, 0),
-(11, 'hey', 4, '4', 4491234567, 0);
+INSERT INTO `employees` (`id`, `name`, `level`, `rfc`, `phone`, `password`, `deleted`) VALUES
+(1, 'Bob Johnny', 0, 'abcdefghijklm', 4495810546, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(2, 'Alice Johnson', 1, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(3, 'Bob Smith', 2, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(4, 'Charlie Brown', 3, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(5, 'Diana Evans', 1, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(6, 'Ethan Foster', 2, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(7, 'Fiona Green', 3, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(8, 'George Harris', 1, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(9, 'Hannah White', 2, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(10, 'Ian King', 3, '', 0, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0),
+(11, 'hey', 4, '4', 4491234567, '$2y$10$eImiTXuWVxfM37uY4JANjQ==', 0);
 
 -- --------------------------------------------------------
 

@@ -19,16 +19,19 @@
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $name = $_POST['name'];
-        $level = $_POST['level'];
+        $level = intval($_POST['level']);
         $phone = $_POST['phone'];
         $rfc = $_POST['rfc'];
+        $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO employees (name, level, phone, rfc, deleted) VALUES ('$name', '$level', '$phone', '$rfc', 0)";
+        $sql = "INSERT INTO employees (name, level, phone, rfc, password, deleted) VALUES (?, ?, ?, ?, ?, 0)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sisss", $name, $level, $phone, $rfc, $password);
 
-        if ($conn->query($sql) === TRUE) {
+        if ($stmt->execute()) {
             $success_message = "Nuevo empleado agregado exitosamente.";
         } else {
-            $error_message = "Error: " . $sql . "<br>" . $conn->error;
+            $error_message = "Error: " . $conn->error;
         }
     }
 ?>
@@ -70,6 +73,10 @@
                     <div class="mb-3">
                         <label for="rfc" class="form-label">RFC</label>
                         <input type="text" class="form-control" name="rfc" maxlength="13" title="El RFC debe tener un máximo de 13 caracteres" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" name="password" required>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Agregar Empleado</button>
