@@ -1,0 +1,158 @@
+Date : 2025-05-25 21:46:40
+Directory : /opt/lampp/htdocs/proyecto-mauri
+Total : 121 files,  11531 codes, 528 comments, 710 blanks, all 12769 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| PHP      |         59 |      7,768 |        387 |        503 |      8,658 |
+| HTML     |         59 |      3,261 |          0 |        131 |      3,392 |
+| MS SQL   |          1 |        468 |        141 |         74 |        683 |
+| PostCSS  |          1 |         21 |          0 |          1 |         22 |
+| XML      |          1 |         13 |          0 |          1 |         14 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                  | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                     |        121 |     11,531 |        528 |        710 |     12,769 |
+| . (Files)                                                             |         19 |      3,000 |        205 |        239 |      3,444 |
+| admin                                                                 |         11 |      1,331 |         22 |         94 |      1,447 |
+| employee                                                              |          5 |        567 |         13 |         19 |        599 |
+| fpdf                                                                  |         86 |      6,633 |        288 |        358 |      7,279 |
+| fpdf (Files)                                                          |          4 |      2,122 |        167 |        128 |      2,417 |
+| fpdf/doc                                                              |         49 |      1,978 |          0 |         53 |      2,031 |
+| fpdf/font                                                             |         14 |        248 |          0 |         14 |        262 |
+| fpdf/makefont                                                         |          2 |      1,049 |         44 |         70 |      1,163 |
+| fpdf/tutorial                                                         |         17 |      1,236 |         77 |         93 |      1,406 |
++-----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                              | language | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /opt/lampp/htdocs/proyecto-mauri/Untitled.svg                         | XML      |         13 |          0 |          1 |         14 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/admin_chat.php                 | PHP      |        138 |          6 |          6 |        150 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/admin_panel.php                | PHP      |         80 |          0 |          1 |         81 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/edit_admin.php                 | PHP      |        117 |          1 |         13 |        131 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/edit_car.php                   | PHP      |        181 |          2 |         16 |        199 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/edit_employee.php              | PHP      |        126 |          1 |         13 |        140 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/navbar.php                     | PHP      |        111 |          1 |          3 |        115 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/new_admin.php                  | PHP      |         64 |          0 |          7 |         71 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/new_car.php                    | PHP      |        139 |          2 |          8 |        149 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/new_employee.php               | PHP      |         83 |          0 |          7 |         90 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/sales.php                      | PHP      |        218 |          9 |         15 |        242 |
+| /opt/lampp/htdocs/proyecto-mauri/admin/view_appointments.php          | PHP      |         74 |          0 |          5 |         79 |
+| /opt/lampp/htdocs/proyecto-mauri/agencia.sql                          | MS SQL   |        468 |        141 |         74 |        683 |
+| /opt/lampp/htdocs/proyecto-mauri/buy_car.php                          | PHP      |        268 |         12 |         24 |        304 |
+| /opt/lampp/htdocs/proyecto-mauri/db.php                               | PHP      |         10 |          0 |          1 |         11 |
+| /opt/lampp/htdocs/proyecto-mauri/employee/chat.php                    | PHP      |        109 |          6 |          5 |        120 |
+| /opt/lampp/htdocs/proyecto-mauri/employee/comisiones.php              | PHP      |        133 |          2 |          8 |        143 |
+| /opt/lampp/htdocs/proyecto-mauri/employee/employee_navbar.php         | PHP      |        167 |          0 |          1 |        168 |
+| /opt/lampp/htdocs/proyecto-mauri/employee/employee_panel.php          | PHP      |         39 |          2 |          0 |         41 |
+| /opt/lampp/htdocs/proyecto-mauri/employee/servicios.php               | PHP      |        119 |          3 |          5 |        127 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/FAQ.htm                         | HTML     |        242 |          0 |         29 |        271 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/changelog.htm                   | HTML     |        188 |          0 |          1 |        189 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/__construct.htm             | HTML     |         63 |          0 |          1 |         64 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/acceptpagebreak.htm         | HTML     |         60 |          0 |          4 |         64 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/addfont.htm                 | HTML     |         67 |          0 |          1 |         68 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/addlink.htm                 | HTML     |         26 |          0 |          1 |         27 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/addpage.htm                 | HTML     |         61 |          0 |          1 |         62 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/aliasnbpages.htm            | HTML     |         44 |          0 |          2 |         46 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/cell.htm                    | HTML     |        104 |          0 |          1 |        105 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/close.htm                   | HTML     |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/error.htm                   | HTML     |         26 |          0 |          1 |         27 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/footer.htm                  | HTML     |         35 |          0 |          1 |         36 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/getpageheight.htm           | HTML     |         18 |          0 |          1 |         19 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/getpagewidth.htm            | HTML     |         18 |          0 |          1 |         19 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/getstringwidth.htm          | HTML     |         23 |          0 |          1 |         24 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/getx.htm                    | HTML     |         20 |          0 |          1 |         21 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/gety.htm                    | HTML     |         20 |          0 |          1 |         21 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/header.htm                  | HTML     |         37 |          0 |          1 |         38 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/image.htm                   | HTML     |         99 |          0 |          1 |        100 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/index.htm                   | HTML     |         59 |          0 |          1 |         60 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/line.htm                    | HTML     |         38 |          0 |          1 |         39 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/link.htm                    | HTML     |         46 |          0 |          1 |         47 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/ln.htm                      | HTML     |         28 |          0 |          1 |         29 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/multicell.htm               | HTML     |         76 |          0 |          1 |         77 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/output.htm                  | HTML     |         55 |          0 |          1 |         56 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/pageno.htm                  | HTML     |         18 |          0 |          1 |         19 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/rect.htm                    | HTML     |         48 |          0 |          1 |         49 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setauthor.htm               | HTML     |         33 |          0 |          1 |         34 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setautopagebreak.htm        | HTML     |         33 |          0 |          1 |         34 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setcompression.htm          | HTML     |         31 |          0 |          1 |         32 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setcreator.htm              | HTML     |         34 |          0 |          1 |         35 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setdisplaymode.htm          | HTML     |         45 |          0 |          1 |         46 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setdrawcolor.htm            | HTML     |         41 |          0 |          1 |         42 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setfillcolor.htm            | HTML     |         40 |          0 |          1 |         41 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setfont.htm                 | HTML     |         78 |          0 |          1 |         79 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setfontsize.htm             | HTML     |         25 |          0 |          1 |         26 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setkeywords.htm             | HTML     |         33 |          0 |          1 |         34 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setleftmargin.htm           | HTML     |         30 |          0 |          1 |         31 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setlinewidth.htm            | HTML     |         29 |          0 |          1 |         30 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setlink.htm                 | HTML     |         34 |          0 |          1 |         35 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setmargins.htm              | HTML     |         37 |          0 |          1 |         38 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setrightmargin.htm          | HTML     |         28 |          0 |          1 |         29 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setsubject.htm              | HTML     |         33 |          0 |          1 |         34 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/settextcolor.htm            | HTML     |         40 |          0 |          1 |         41 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/settitle.htm                | HTML     |         33 |          0 |          1 |         34 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/settopmargin.htm            | HTML     |         28 |          0 |          1 |         29 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setx.htm                    | HTML     |         29 |          0 |          1 |         30 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/setxy.htm                   | HTML     |         31 |          0 |          1 |         32 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/sety.htm                    | HTML     |         33 |          0 |          1 |         34 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/text.htm                    | HTML     |         39 |          0 |          1 |         40 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/doc/write.htm                   | HTML     |         51 |          0 |          1 |         52 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/courier.php                | PHP      |         10 |          0 |          1 |         11 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/courierb.php               | PHP      |         10 |          0 |          1 |         11 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/courierbi.php              | PHP      |         10 |          0 |          1 |         11 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/courieri.php               | PHP      |         10 |          0 |          1 |         11 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/helvetica.php              | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/helveticab.php             | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/helveticabi.php            | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/helveticai.php             | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/symbol.php                 | PHP      |         20 |          0 |          1 |         21 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/times.php                  | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/timesb.php                 | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/timesbi.php                | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/timesi.php                 | PHP      |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/font/zapfdingbats.php           | PHP      |         20 |          0 |          1 |         21 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/fpdf.css                        | PostCSS  |         21 |          0 |          1 |         22 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/fpdf.php                        | PHP      |      1,671 |        167 |         97 |      1,935 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/makefont/makefont.php           | PHP      |        401 |         23 |         24 |        448 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/makefont/ttfparser.php          | PHP      |        648 |         21 |         46 |        715 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/CevicheOne-Regular.php | PHP      |         25 |          0 |          1 |         26 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/index.htm              | HTML     |         20 |          0 |          1 |         21 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/makefont.php           | PHP      |          4 |          1 |          2 |          7 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto1.htm              | HTML     |         75 |          0 |          2 |         77 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto1.php              | PHP      |          8 |          0 |          2 |         10 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto2.htm              | HTML     |         77 |          0 |          4 |         81 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto2.php              | PHP      |         27 |         11 |          4 |         42 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto3.htm              | HTML     |        108 |          0 |          8 |        116 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto3.php              | PHP      |         55 |         19 |          8 |         82 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto4.htm              | HTML     |        122 |          0 |         11 |        133 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto4.php              | PHP      |         81 |         18 |         11 |        110 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto5.htm              | HTML     |        129 |          0 |          6 |        135 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto5.php              | PHP      |         79 |         18 |          6 |        103 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto6.htm              | HTML     |        146 |          0 |          9 |        155 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto6.php              | PHP      |         95 |         10 |          9 |        114 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto7.htm              | HTML     |        176 |          0 |          7 |        183 |
+| /opt/lampp/htdocs/proyecto-mauri/fpdf/tutorial/tuto7.php              | PHP      |          9 |          0 |          2 |         11 |
+| /opt/lampp/htdocs/proyecto-mauri/index.php                            | PHP      |        164 |          2 |         10 |        176 |
+| /opt/lampp/htdocs/proyecto-mauri/inventory.php                        | PHP      |        179 |          4 |         13 |        196 |
+| /opt/lampp/htdocs/proyecto-mauri/login.php                            | PHP      |        170 |          2 |         12 |        184 |
+| /opt/lampp/htdocs/proyecto-mauri/logout.php                           | PHP      |         23 |          0 |          1 |         24 |
+| /opt/lampp/htdocs/proyecto-mauri/new_appointment.php                  | PHP      |        200 |          4 |         15 |        219 |
+| /opt/lampp/htdocs/proyecto-mauri/recipt.php                           | PHP      |         73 |          6 |         15 |         94 |
+| /opt/lampp/htdocs/proyecto-mauri/register.php                         | PHP      |        200 |          4 |         14 |        218 |
+| /opt/lampp/htdocs/proyecto-mauri/review_car.php                       | PHP      |        206 |          8 |         10 |        224 |
+| /opt/lampp/htdocs/proyecto-mauri/service_request.php                  | PHP      |        189 |          7 |         12 |        208 |
+| /opt/lampp/htdocs/proyecto-mauri/user_chat.php                        | PHP      |        226 |          5 |          3 |        234 |
+| /opt/lampp/htdocs/proyecto-mauri/user_chat_messages.php               | PHP      |         17 |          0 |          1 |         18 |
+| /opt/lampp/htdocs/proyecto-mauri/user_chat_send.php                   | PHP      |         17 |          0 |          1 |         18 |
+| /opt/lampp/htdocs/proyecto-mauri/user_navbar.php                      | PHP      |         84 |          1 |          1 |         86 |
+| /opt/lampp/htdocs/proyecto-mauri/user_settings.php                    | PHP      |        232 |          3 |         15 |        250 |
+| /opt/lampp/htdocs/proyecto-mauri/view_car.php                         | PHP      |        261 |          6 |         16 |        283 |
+| Total                                                                 |          |     11,531 |        528 |        710 |     12,769 |
++-----------------------------------------------------------------------+----------+------------+------------+------------+------------+

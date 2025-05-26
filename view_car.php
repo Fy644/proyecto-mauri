@@ -72,6 +72,45 @@
             $user_data = $result->fetch_assoc();
         }
     }
+
+    // Fetch review counts for chart
+$review_counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+$review_count_sql = "SELECT score, COUNT(*) as cnt FROM reviews WHERE id_car = $car_id AND deleted = 0 GROUP BY score";
+$review_count_res = $conn->query($review_count_sql);
+if ($review_count_res) {
+    while ($row = $review_count_res->fetch_assoc()) {
+        $score = intval($row['score']);
+        $review_counts[$score] = intval($row['cnt']);
+    }
+}
+
+// Calculate average score
+$avg_score = null;
+$avg_score_sql = "SELECT AVG(score) as avg_score, COUNT(*) as total_reviews FROM reviews WHERE id_car = $car_id AND deleted = 0";
+$avg_score_res = $conn->query($avg_score_sql);
+if ($avg_score_res && $avg_score_res->num_rows > 0) {
+    $row = $avg_score_res->fetch_assoc();
+    $avg_score = $row['avg_score'] !== null ? round($row['avg_score'], 2) : null;
+    $total_reviews = intval($row['total_reviews']);
+} else {
+    $avg_score = null;
+    $total_reviews = 0;
+}
+
+// Handle review filter
+$filter_score = isset($_GET['filter_score']) ? intval($_GET['filter_score']) : 0;
+$filter_sql = "SELECT rating, name, score FROM reviews WHERE id_car = $car_id AND deleted = 0";
+if ($filter_score >= 1 && $filter_score <= 5) {
+    $filter_sql .= " AND score = $filter_score";
+}
+$filter_sql .= " ORDER BY id DESC";
+$reviews_res = $conn->query($filter_sql);
+$reviews = [];
+if ($reviews_res) {
+    while ($row = $reviews_res->fetch_assoc()) {
+        $reviews[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -80,6 +119,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title><?php echo htmlspecialchars($car['name']); ?> - Detalles del Coche</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://code.highcharts.com/highcharts.js"></script>
         <style>
             body {
                 background-color: #f8f9fa; /* Light gray background */
@@ -140,62 +180,7 @@
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="index.php">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="inventory.php">Inventario</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
-                        </li>
-                    </ul>
-                </div>
-                <img src="<?php echo isset($_SESSION['user_id']) && !empty($user_data['profile_picture']) ? htmlspecialchars($user_data['profile_picture']) : 'Untitled.svg'; ?>" 
-                     alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
-                <div class="user-login-form" id="userLoginForm">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <div class="text-center mb-3">
-                            <img src="<?php echo htmlspecialchars($user_data['profile_picture'] ?? 'Untitled.svg'); ?>" 
-                                 alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                        </div>
-                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
-                        <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
-                        <form method="post" action="">
-                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
-                        </form>
-                    <?php else: ?>
-                        <div class="text-center mb-3">
-                            <img src="Untitled.svg" 
-                                 alt="Default Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                        </div>
-                        <?php if ($login_error): ?>
-                            <div class="alert alert-danger"><?php echo $login_error; ?></div>
-                        <?php endif; ?>
-                        <form method="post" action="">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Usuario</label>
-                                <input type="text" class="form-control" name="username" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" name="password" required>
-                            </div>
-                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
-                            <a href="register.php" class="btn btn-secondary">Registrarse</a>
-                        </form>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </nav>
+        <?php include 'user_navbar.php'; ?>
         <div class="container mt-5">
             <div class="row">
                 <div class="col-md-6">
@@ -211,20 +196,86 @@
                     <a href="javascript:history.back()" class="btn btn-secondary">Regresar</a>
                 </div>
             </div>
+            <hr>
+            <h3 class="mt-4 mb-3">Valoraciones de usuarios</h3>
+            <div class="d-flex align-items-center mb-2" style="gap: 24px;">
+                <div id="review-chart" style="width:100%;max-width:500px;height:300px;"></div>
+                <div>
+                    <div class="fs-5">
+                        <strong>Promedio:</strong>
+                        <?php if ($avg_score !== null): ?>
+                            <span class="text-warning" style="font-size:1.5em;"><?php echo number_format($avg_score, 2); ?> ★</span>
+                            <span class="text-muted" style="font-size:0.9em;">(<?php echo $total_reviews; ?> reseña<?php echo $total_reviews == 1 ? '' : 's'; ?>)</span>
+                        <?php else: ?>
+                            <span class="text-muted">Sin reseñas</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <form method="get" class="mb-3">
+                <input type="hidden" name="id" value="<?php echo $car_id; ?>">
+                <label for="filter_score" class="form-label">Filtrar reseñas por puntuación:</label>
+                <select name="filter_score" id="filter_score" class="form-select" style="width:auto;display:inline-block;" onchange="this.form.submit()">
+                    <option value="0" <?php if ($filter_score == 0) echo 'selected'; ?>>Todas</option>
+                    <option value="5" <?php if ($filter_score == 5) echo 'selected'; ?>>5 estrellas</option>
+                    <option value="4" <?php if ($filter_score == 4) echo 'selected'; ?>>4 estrellas</option>
+                    <option value="3" <?php if ($filter_score == 3) echo 'selected'; ?>>3 estrellas</option>
+                    <option value="2" <?php if ($filter_score == 2) echo 'selected'; ?>>2 estrellas</option>
+                    <option value="1" <?php if ($filter_score == 1) echo 'selected'; ?>>1 estrella</option>
+                </select>
+            </form>
+            <div>
+                <?php if (count($reviews) > 0): ?>
+                    <?php foreach ($reviews as $review): ?>
+                        <div class="border rounded p-2 mb-2">
+                            <span class="badge bg-success"><?php echo str_repeat("★", $review['score']); ?></span>
+                            <em><?php echo htmlspecialchars($review['rating']); ?></em>
+                            <br>
+                            <small class="text-muted">Por <?php echo htmlspecialchars($review['name']); ?></small>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>No hay reseñas para este coche<?php echo ($filter_score ? " con esa puntuación" : ""); ?>.</p>
+                <?php endif; ?>
+            </div>
         </div>
-        <a href="admin/login.php" class="admin-login">Admin Login</a>
+        <a href="login.php" class="admin-login">Admin Login</a>
         <script>
-            function toggleUserLogin() {
-                const form = document.getElementById('userLoginForm');
-                form.style.display = form.style.display === 'block' ? 'none' : 'block';
-            }
-
             // Automatically show login popup if login error exists
             <?php if ($show_login_popup): ?>
                 document.addEventListener('DOMContentLoaded', function () {
                     toggleUserLogin();
                 });
             <?php endif; ?>
+
+            // Highcharts bar chart for review counts
+            document.addEventListener('DOMContentLoaded', function () {
+                Highcharts.chart('review-chart', {
+                    chart: { type: 'column' },
+                    title: { text: 'Distribución de valoraciones' },
+                    xAxis: {
+                        categories: ['1 estrella', '2 estrellas', '3 estrellas', '4 estrellas', '5 estrellas'],
+                        title: { text: 'Puntuación' }
+                    },
+                    yAxis: {
+                        min: 0,
+                        allowDecimals: false,
+                        title: { text: 'Cantidad de usuarios' }
+                    },
+                    series: [{
+                        name: 'Usuarios',
+                        data: [
+                            <?php echo $review_counts[1]; ?>,
+                            <?php echo $review_counts[2]; ?>,
+                            <?php echo $review_counts[3]; ?>,
+                            <?php echo $review_counts[4]; ?>,
+                            <?php echo $review_counts[5]; ?>
+                        ],
+                        colorByPoint: true
+                    }],
+                    legend: { enabled: false }
+                });
+            });
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

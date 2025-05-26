@@ -32,7 +32,7 @@
             if (password_verify($admin_password, $admin['password'])) {
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $admin['username'];
-                header("Location: admin_panel.php");
+                header("Location: ./admin/admin_panel.php");
                 exit();
             } else {
                 $admin_error_message = "Usuario o contraseña inválidos.";
@@ -59,7 +59,7 @@
                 $_SESSION['employee_logged_in'] = true;
                 $_SESSION['employee_id'] = $employee['id'];
                 $_SESSION['employee_name'] = $employee['name'];
-                header("Location: ../employee/employee_panel.php");
+                header("Location: ./employee/employee_panel.php");
                 exit();
             } else {
                 $employee_error_message = "Contraseña incorrecta.";
@@ -131,7 +131,7 @@
     <body>
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <a class="navbar-brand" href="../index.php">Agencia Elmas Capitos</a>
+                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
             </div>
         </nav>
         <div class="container">
@@ -144,7 +144,7 @@
                         <?php if ($admin_error_message): ?>
                             <div class="alert alert-danger"><?php echo $admin_error_message; ?></div>
                         <?php endif; ?>
-                        <form method="post" action="">
+                        <form method="post" action="" id="admin_login_form">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Usuario</label>
                                 <input type="text" class="form-control" name="username" required>
@@ -163,7 +163,7 @@
                         <?php if ($employee_error_message): ?>
                             <div class="alert alert-danger"><?php echo $employee_error_message; ?></div>
                         <?php endif; ?>
-                        <form method="post" action="">
+                        <form method="post" action="" id="employee_login_form">
                             <div class="mb-3">
                                 <label for="employee_id" class="form-label">ID de Empleado</label>
                                 <input type="number" class="form-control" name="employee_id" required>

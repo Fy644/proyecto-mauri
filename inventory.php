@@ -132,62 +132,7 @@
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="index.php">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="inventory.php">Inventario</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
-                        </li>
-                    </ul>
-                </div>
-                <img src="<?php echo isset($_SESSION['user_id']) && !empty($user_data['profile_picture']) ? htmlspecialchars($user_data['profile_picture']) : 'Untitled.svg'; ?>" 
-                     alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
-                <div class="user-login-form" id="userLoginForm">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <div class="text-center mb-3">
-                            <img src="<?php echo htmlspecialchars($user_data['profile_picture'] ?? 'Untitled.svg'); ?>" 
-                                 alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                        </div>
-                        <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
-                        <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
-                        <form method="post" action="">
-                            <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
-                        </form>
-                    <?php else: ?>
-                        <div class="text-center mb-3">
-                            <img src="Untitled.svg" 
-                                 alt="Default Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                        </div>
-                        <?php if ($login_error): ?>
-                            <div class="alert alert-danger"><?php echo $login_error; ?></div>
-                        <?php endif; ?>
-                        <form method="post" action="">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Usuario</label>
-                                <input type="text" class="form-control" name="username" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" name="password" required>
-                            </div>
-                            <button type="submit" name="login" class="btn btn-primary">Iniciar Sesión</button>
-                            <a href="register.php" class="btn btn-secondary">Registrarse</a>
-                        </form>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </nav>
+        <?php include 'user_navbar.php'; ?>
         <div class="container mt-4">
             <h1 class="text-center">Todos los Coches</h1>
             <div class="car-section">
@@ -197,6 +142,16 @@
                             $imageSrc = "images/" . $result->img_name . ".png";
                             $shortDescription = strlen($result->description) > 40 ? substr($result->description, 0, 40) . '...' : $result->description;
                             $typeCapitalized = ucfirst($result->type); // Capitalize the first letter
+
+                            // Fetch a random 5-star review for this car
+                            $car_id = $result->id;
+                            $review = null;
+                            $review_sql = "SELECT rating, name FROM reviews WHERE id_car = $car_id AND score = 5 AND deleted = 0 ORDER BY RAND() LIMIT 1";
+                            $review_res = $conn->query($review_sql);
+                            if ($review_res && $review_res->num_rows > 0) {
+                                $review = $review_res->fetch_assoc();
+                            }
+
                             echo "<div class='col-md-4 mb-4'>";
                             echo "<div class='card'>";
                             echo "<img src='" . $imageSrc . "' class='card-img-top' alt='" . $result->name . "'>";
@@ -206,6 +161,12 @@
                             echo "<p class='card-text'><strong>Precio:</strong> $" . $result->price . "</p>";
                             echo "<p class='card-text'><strong>Tipo:</strong> " . $typeCapitalized . "</p>";
                             echo "<p class='card-text'><strong>Usado:</strong> " . ($result->used ? "Sí" : "No") . "</p>";
+                            // Show random 5-star review if exists
+                            if ($review) {
+                                echo "<div class='alert alert-success p-2 mb-2'><strong>★ 5 estrellas</strong><br>";
+                                echo "<em>\"" . htmlspecialchars($review['rating']) . "\"</em><br>";
+                                echo "<small>- " . htmlspecialchars($review['name']) . "</small></div>";
+                            }
                             echo "<a href='view_car.php?id=" . $result->id . "' class='btn btn-primary'>Ver Detalles</a>";
                             echo "</div>";
                             echo "</div>";
@@ -215,7 +176,7 @@
                 </div>
             </div>
         </div>
-        <a href="admin/login.php" class="admin-login">Admin Login</a>
+        <a href="login.php" class="admin-login">Admin Login</a>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             function toggleUserLogin() {

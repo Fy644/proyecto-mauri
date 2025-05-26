@@ -176,39 +176,7 @@
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="index.php">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="inventory.php">Inventario</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="new_appointment.php">Prueba de coche</a>
-                        </li>
-                    </ul>
-                </div>
-                <img src="<?php echo isset($user['profile_picture']) ? htmlspecialchars($user['profile_picture']) : 'Untitled.svg'; ?>" 
-                     alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
-                <div class="user-login-form" id="userLoginForm">
-                    <div class="text-center mb-3">
-                        <img src="<?php echo htmlspecialchars($user['profile_picture'] ?? 'Untitled.svg'); ?>" 
-                             alt="Profile Picture" class="rounded-circle">
-                    </div>
-                    <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
-                    <form method="post" action="">
-                        <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
-                    </form>
-                </div>
-            </div>
-        </nav>
+        <?php include 'user_navbar.php'; ?>
         <div class="container mt-5">
             <h1 class="text-center">Configuración de Usuario</h1>
             <p class="text-center">Bienvenido, <?php echo htmlspecialchars($user['username']); ?>.</p>
@@ -269,7 +237,7 @@
             <?php endif; ?>
             <a href="index.php" class="btn btn-secondary mt-3">Volver al Inicio</a>
         </div>
-        <a href="admin/login.php" class="admin-login">Admin Login</a>
+        <a href="login.php" class="admin-login">Admin Login</a>
         <script>
             function toggleUserLogin() {
                 const form = document.getElementById('userLoginForm');

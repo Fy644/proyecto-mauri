@@ -19,8 +19,8 @@
 
     // Fetch the 5 most recent sales
     $sales = $conn->query("
-        SELECT sales.id, sales.client, sales.price, sales.down, sales.monthly, sales.months, sales.percent, 
-               sales.datetime, carros.name AS car_name, employees.name AS employee_name 
+        SELECT sales.id, sales.client, sales.price, sales.down, sales.monthly, sales.months, 
+               sales.id_car, sales.employee_id, sales.datetimePurchase, carros.name AS car_name, employees.name AS employee_name 
         FROM sales 
         INNER JOIN carros ON sales.id_car = carros.id 
         INNER JOIN employees ON sales.employee_id = employees.id 
@@ -92,7 +92,6 @@
                                 <th>Pago Inicial</th>
                                 <th>Pago Mensual</th>
                                 <th>Meses</th>
-                                <th>Tasa de Interés</th>
                                 <th>Fecha de Venta</th>
                             </tr>
                         </thead>
@@ -111,16 +110,15 @@
                                     </td>
                                     <td>
                                         <?php 
-                                            if ($sale['months'] > 0) {
-                                                echo "$" . number_format($sale['price'] / $sale['months'], 2);
+                                            if ($sale['months'] > 0 && $sale['monthly']) {
+                                                echo "$" . number_format(($sale['price'] - $sale['down']) / $sale['months'], 2);
                                             } else {
                                                 echo "N/A";
                                             }
                                         ?>
                                     </td>
                                     <td><?php echo $sale['months'] > 0 ? $sale['months'] : "N/A"; ?></td>
-                                    <td><?php echo $sale['percent'] * 100; ?>%</td>
-                                    <td><?php echo htmlspecialchars($sale['datetime']); ?></td>
+                                    <td><?php echo htmlspecialchars($sale['datetimePurchase']); ?></td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
