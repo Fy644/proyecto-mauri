@@ -120,7 +120,6 @@
             <?php if ($level !== null && $level >= 4): ?>
                 <a href="servicios.php">Servicios</a>
             <?php endif; ?>
-            <a href="chat.php">Chat</a>
             <a href="../logout.php">Cerrar Sesión</a>
             <div class="sidebar-name">
                 <?php echo htmlspecialchars($name); ?>

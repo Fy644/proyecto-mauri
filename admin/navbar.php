@@ -98,7 +98,6 @@
             <a href="edit_employee.php">Editar Empleado</a>
             <a href="view_appointments.php">Ver Citas</a>
             <a href="sales.php">Ver Ventas</a>
-            <a href="admin_chat.php">Chat</a>
             <a href="../logout.php">Cerrar Sesión</a>
         </div>
         <button class="toggle-btn" id="toggle-btn">☰</button>

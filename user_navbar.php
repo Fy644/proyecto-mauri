@@ -30,7 +30,6 @@ $show_login_popup = $show_login_popup ?? false;
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item"><a href="service_request.php" class="nav-link">Solicitar servicio</a></li>
                     <li class="nav-item"><a href="review_car.php" class="nav-link">Reseñar coche</a></li>
-                    <li class="nav-item"><a href="user_chat.php" class="nav-link">Chat</a></li>
                 <?php endif; ?>
             </ul>
         </div>
