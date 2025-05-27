@@ -27,7 +27,6 @@ $show_login_popup = $show_login_popup ?? false;
                 <li class="nav-item"><a class="nav-link" href="index.php">Inicio</a></li>
                 <li class="nav-item"><a class="nav-link" href="inventory.php">Inventario</a></li>
                 <li class="nav-item"><a class="nav-link" href="new_appointment.php">Prueba de coche</a></li>
-                <li class="nav-item"><a class="nav-link" href="search.php">Buscar</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item"><a href="service_request.php" class="nav-link">Solicitar servicio</a></li>
                     <li class="nav-item"><a href="review_car.php" class="nav-link">Reseñar coche</a></li>
@@ -35,6 +34,12 @@ $show_login_popup = $show_login_popup ?? false;
                 <?php endif; ?>
             </ul>
         </div>
+        <!-- Search bar start -->
+        <form class="d-flex me-3" role="search" action="search.php" method="get" style="max-width: 300px;">
+            <input class="form-control me-2" type="search" name="q" placeholder="Buscar coches..." aria-label="Buscar" required>
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+        <!-- Search bar end -->
         <img src="<?php echo isset($_SESSION['user_id']) && !empty($user_data['profile_picture']) ? htmlspecialchars($user_data['profile_picture']) : 'Untitled.svg'; ?>"
              alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
         <div class="user-login-form" id="userLoginForm">

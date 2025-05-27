@@ -85,7 +85,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label">Precio</label>
-                        <input type="number" class="form-control" name="price" required>
+                        <input type="number" class="form-control" name="price" required max="2147483647">
                     </div>
                     <div class="mb-3">
                         <label for="type" class="form-label">Tipo</label>

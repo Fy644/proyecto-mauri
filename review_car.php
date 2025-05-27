@@ -128,89 +128,60 @@ while ($row = $recent_query->fetch_assoc()) {
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="index.php">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="inventory.php">Inventario</a></li>
-                <li class="nav-item"><a class="nav-link" href="new_appointment.php">Prueba de coche</a></li>
-                <li class="nav-item"><a href="service_request.php" class="nav-link">Solicitar servicio</a></li>
-                <li class="nav-item"><a href="review_car.php" class="nav-link">Reseñar coche</a></li>
-            </ul>
-        </div>
-        <img src="<?php echo isset($_SESSION['user_id']) && !empty($user_data['profile_picture']) ? htmlspecialchars($user_data['profile_picture']) : 'Untitled.svg'; ?>"
-             alt="User Login" class="user-login-icon" onclick="toggleUserLogin()">
-        <div class="user-login-form" id="userLoginForm">
-            <div class="text-center mb-3">
-                <img src="<?php echo htmlspecialchars($user_data['profile_picture'] ?? 'Untitled.svg'); ?>"
-                     alt="Profile Picture" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+    <?php include 'user_navbar.php'; ?>
+    <div class="container mt-5">
+        <h1 class="text-center">Reseñar un coche</h1>
+        <?php if ($success): ?>
+            <div class="alert alert-success"><?php echo $success; ?></div>
+        <?php elseif ($error): ?>
+            <div class="alert alert-danger"><?php echo $error; ?></div>
+        <?php endif; ?>
+        <form method="post" class="mb-5">
+            <div class="mb-3">
+                <label for="car_id" class="form-label">Selecciona un coche</label>
+                <select name="car_id" class="form-select" required>
+                    <option value="">-- Selecciona --</option>
+                    <?php foreach ($cars as $car): ?>
+                        <option value="<?php echo $car['id']; ?>">
+                            <?php echo htmlspecialchars($car['name'] . " (" . $car['year'] . ")"); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
-            <p class="text-center">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
-            <a href="user_settings.php" class="btn btn-primary mb-2">User Settings</a>
-            <form method="post" action="">
-                <button type="submit" name="logout" class="btn btn-danger">Log Out</button>
-            </form>
-        </div>
-    </div>
-</nav>
-<div class="container mt-5">
-    <h1 class="text-center">Reseñar un coche</h1>
-    <?php if ($success): ?>
-        <div class="alert alert-success"><?php echo $success; ?></div>
-    <?php elseif ($error): ?>
-        <div class="alert alert-danger"><?php echo $error; ?></div>
-    <?php endif; ?>
-    <form method="post" class="mb-5">
-        <div class="mb-3">
-            <label for="car_id" class="form-label">Selecciona un coche</label>
-            <select name="car_id" class="form-select" required>
-                <option value="">-- Selecciona --</option>
-                <?php foreach ($cars as $car): ?>
-                    <option value="<?php echo $car['id']; ?>">
-                        <?php echo htmlspecialchars($car['name'] . " (" . $car['year'] . ")"); ?>
-                    </option>
+            <div class="mb-3">
+                <label for="score" class="form-label">Puntuación</label>
+                <select name="score" class="form-select" required>
+                    <option value="">-- Selecciona --</option>
+                    <option value="1">1 - Muy malo</option>
+                    <option value="2">2 - Malo</option>
+                    <option value="3">3 - Regular</option>
+                    <option value="4">4 - Bueno</option>
+                    <option value="5">5 - Excelente</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="review_text" class="form-label">Tu reseña</label>
+                <textarea name="review_text" class="form-control" rows="4" maxlength="500" required></textarea>
+            </div>
+            <button type="submit" name="submit_review" class="btn btn-primary">Enviar Reseña</button>
+        </form>
+        <h2 class="text-center mb-4">Reseñas recientes</h2>
+        <?php if (!empty($recent_reviews)): ?>
+            <div class="list-group">
+                <?php foreach ($recent_reviews as $review): ?>
+                    <div class="list-group-item">
+                        <strong><?php echo htmlspecialchars($review['car_name'] . " (" . $review['year'] . ")"); ?></strong>
+                        <span class="badge bg-success ms-2"><?php echo str_repeat("★", $review['score']); ?></span>
+                        <p class="mb-1"><?php echo htmlspecialchars($review['rating']); ?></p>
+                        <small class="text-muted">Por <?php echo htmlspecialchars($review['name']); ?></small>
+                    </div>
                 <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="score" class="form-label">Puntuación</label>
-            <select name="score" class="form-select" required>
-                <option value="">-- Selecciona --</option>
-                <option value="1">1 - Muy malo</option>
-                <option value="2">2 - Malo</option>
-                <option value="3">3 - Regular</option>
-                <option value="4">4 - Bueno</option>
-                <option value="5">5 - Excelente</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="review_text" class="form-label">Tu reseña</label>
-            <textarea name="review_text" class="form-control" rows="4" maxlength="500" required></textarea>
-        </div>
-        <button type="submit" name="submit_review" class="btn btn-primary">Enviar Reseña</button>
-    </form>
-    <h2 class="text-center mb-4">Reseñas recientes</h2>
-    <?php if (!empty($recent_reviews)): ?>
-        <div class="list-group">
-            <?php foreach ($recent_reviews as $review): ?>
-                <div class="list-group-item">
-                    <strong><?php echo htmlspecialchars($review['car_name'] . " (" . $review['year'] . ")"); ?></strong>
-                    <span class="badge bg-success ms-2"><?php echo str_repeat("★", $review['score']); ?></span>
-                    <p class="mb-1"><?php echo htmlspecialchars($review['rating']); ?></p>
-                    <small class="text-muted">Por <?php echo htmlspecialchars($review['name']); ?></small>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="text-center">No hay reseñas aún.</p>
-    <?php endif; ?>
-    <a href="index.php" class="btn btn-secondary mt-4">Volver al Inicio</a>
-</div>
+            </div>
+        <?php else: ?>
+            <p class="text-center">No hay reseñas aún.</p>
+        <?php endif; ?>
+        <a href="index.php" class="btn btn-secondary mt-4">Volver al Inicio</a>
+    </div>
 <a href="login.php" class="admin-login">Admin Login</a>
 <script>
     function toggleUserLogin() {
