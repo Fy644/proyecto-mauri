@@ -17,10 +17,35 @@ $search_query = "";
 
 if (isset($_GET['q']) && !empty($_GET['q'])) {
     $search_query = trim($_GET['q']);
-    // Only search in the name field
     $search_term = "%" . $search_query . "%";
     
+    // Get sort option
+    $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
+    
+    // Build the base query
     $sql = "SELECT * FROM carros WHERE LOWER(name) LIKE LOWER(?)";
+    
+    // Add sorting
+    switch ($sort) {
+        case 'price_asc':
+            $sql .= " ORDER BY price ASC";
+            break;
+        case 'price_desc':
+            $sql .= " ORDER BY price DESC";
+            break;
+        case 'year_asc':
+            $sql .= " ORDER BY year ASC";
+            break;
+        case 'year_desc':
+            $sql .= " ORDER BY year DESC";
+            break;
+        case 'name_desc':
+            $sql .= " ORDER BY name DESC";
+            break;
+        default: // name_asc
+            $sql .= " ORDER BY name ASC";
+    }
+    
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $search_term);
     $stmt->execute();
@@ -29,6 +54,14 @@ if (isset($_GET['q']) && !empty($_GET['q'])) {
     while ($row = $result->fetch_assoc()) {
         $search_results[] = $row;
     }
+}
+
+// Get unique car types for the filter dropdown
+$types_query = "SELECT DISTINCT type FROM carros ORDER BY type";
+$types_result = $conn->query($types_query);
+$car_types = [];
+while ($row = $types_result->fetch_assoc()) {
+    $car_types[] = $row['type'];
 }
 
 // Fetch user data if logged in
@@ -99,6 +132,19 @@ if (isset($_SESSION['user_id'])) {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-section label {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .filter-section .form-group {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -112,6 +158,27 @@ if (isset($_SESSION['user_id'])) {
                 Búsqueda de coches
             <?php endif; ?>
         </h1>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form method="get" class="row g-3">
+                <input type="hidden" name="q" value="<?php echo htmlspecialchars($search_query); ?>">
+                
+                <div class="col-md-4 offset-md-4">
+                    <div class="form-group">
+                        <label for="sort">Ordenar por</label>
+                        <select class="form-control" id="sort" name="sort" onchange="this.form.submit()">
+                            <option value="name_asc" <?php echo $sort === 'name_asc' ? 'selected' : ''; ?>>Nombre (A-Z)</option>
+                            <option value="name_desc" <?php echo $sort === 'name_desc' ? 'selected' : ''; ?>>Nombre (Z-A)</option>
+                            <option value="price_asc" <?php echo $sort === 'price_asc' ? 'selected' : ''; ?>>Precio (Menor a Mayor)</option>
+                            <option value="price_desc" <?php echo $sort === 'price_desc' ? 'selected' : ''; ?>>Precio (Mayor a Menor)</option>
+                            <option value="year_asc" <?php echo $sort === 'year_asc' ? 'selected' : ''; ?>>Año (Más antiguo)</option>
+                            <option value="year_desc" <?php echo $sort === 'year_desc' ? 'selected' : ''; ?>>Año (Más reciente)</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <?php if (empty($search_results) && !empty($search_query)): ?>
             <div class="alert alert-info text-center">
