@@ -18,7 +18,7 @@ $show_login_popup = $show_login_popup ?? false;
 ?>
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">Agencia Elmas Capitos</a>
+        <a class="navbar-brand" href="index.php">Agencia Lou-Lou</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -27,6 +27,7 @@ $show_login_popup = $show_login_popup ?? false;
                 <li class="nav-item"><a class="nav-link" href="index.php">Inicio</a></li>
                 <li class="nav-item"><a class="nav-link" href="inventory.php">Inventario</a></li>
                 <li class="nav-item"><a class="nav-link" href="new_appointment.php">Prueba de coche</a></li>
+                <li class="nav-item"><a class="nav-link" href="search.php">Buscar</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item"><a href="service_request.php" class="nav-link">Solicitar servicio</a></li>
                     <li class="nav-item"><a href="review_car.php" class="nav-link">Reseñar coche</a></li>
