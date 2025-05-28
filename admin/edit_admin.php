@@ -29,33 +29,51 @@
         }
     }
 
+    require_once '../includes/validation.php';
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $errors = [];
+        
         if (isset($_POST['delete'])) {
             $admin_id = intval($_POST['admin_id']);
-            $sql = "DELETE FROM admins WHERE id = $admin_id";
+            $sql = "UPDATE admins SET deleted = 1 WHERE id = $admin_id";
 
             if ($conn->query($sql) === TRUE) {
-                $success_message = "Admin deleted successfully.";
+                $success_message = "Administrador eliminado exitosamente.";
                 unset($admin); // Remove the admin data
             } else {
                 $error_message = "Error: " . $sql . "<br>" . $conn->error;
             }
         } else {
-            $admin_id = intval($_POST['admin_id']);
-            $username = substr($_POST['username'], 0, 50); // Limit username to 50 characters
-            $password = !empty($_POST['password']) ? substr($_POST['password'], 0, 255) : '';
-            $hashed_password = !empty($password) ? password_hash($password, PASSWORD_BCRYPT) : $admin['password'];
+            // Validate username (varchar(32))
+            $username = trim($_POST['username']);
+            if ($error = validateVarchar($username, 'nombre de usuario', 32)) {
+                $errors[] = $error;
+            }
+            
+            // Validate password if provided
+            $password = !empty($_POST['password']) ? $_POST['password'] : null;
+            if ($password && strlen($password) < 8) {
+                $errors[] = "La contraseña debe tener al menos 8 caracteres.";
+            }
+            
+            if (empty($errors)) {
+                // Sanitize inputs for database
+                $username = $conn->real_escape_string($username);
+                $password = $password ? password_hash($password, PASSWORD_BCRYPT) : null;
+                
+                $sql = "UPDATE admins SET 
+                        username = '$username'" . ($password ? ", password = '$password'" : "") . "
+                        WHERE id = " . intval($_POST['admin_id']);
 
-            $sql = "UPDATE admins SET 
-                    username = '$username', 
-                    password = '$hashed_password' 
-                    WHERE id = $admin_id";
-
-            if ($conn->query($sql) === TRUE) {
-                $success_message = "Admin updated successfully.";
-                $admin = $conn->query("SELECT * FROM admins WHERE id = $admin_id")->fetch_assoc(); // Refresh admin data
+                if ($conn->query($sql) === TRUE) {
+                    $success_message = "Administrador actualizado exitosamente.";
+                    $admin = $conn->query("SELECT * FROM admins WHERE id = " . intval($_POST['admin_id']))->fetch_assoc();
+                } else {
+                    $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                }
             } else {
-                $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                $error_message = implode("<br>", $errors);
             }
         }
     }
@@ -104,12 +122,12 @@
                     <form method="post" action="">
                         <input type="hidden" name="admin_id" value="<?php echo $admin['id']; ?>">
                         <div class="mb-3">
-                            <label for="username" class="form-label">Usuario</label>
-                            <input type="text" class="form-control" name="username" maxlength="50" value="<?php echo htmlspecialchars($admin['username']); ?>" required>
+                            <label for="username" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" name="username" maxlength="32" value="<?php echo htmlspecialchars($admin['username']); ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña (Deja en blanco para dejar contraseña actual)</label>
-                            <input type="password" class="form-control" name="password" maxlength="255">
+                            <label for="password" class="form-label">Nueva Contraseña (opcional)</label>
+                            <input type="password" class="form-control" name="password" minlength="8">
                         </div>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Actualizar Administrador</button>

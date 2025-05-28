@@ -17,21 +17,62 @@
         exit();
     }
 
+    require_once '../includes/validation.php';
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $name = $_POST['name'];
-        $level = intval($_POST['level']);
+        $errors = [];
+        
+        // Validate name (varchar(32))
+        $name = trim($_POST['name']);
+        if ($error = validateVarchar($name, 'nombre del empleado', 32)) {
+            $errors[] = $error;
+        }
+        
+        // Validate level (int)
+        $level = $_POST['level'];
+        if ($error = validateInt($level, 'nivel')) {
+            $errors[] = $error;
+        }
+        if ($level < 0 || $level > 4) {
+            $errors[] = "El nivel debe estar entre 0 y 4.";
+        }
+        
+        // Validate phone (bigint(20))
         $phone = $_POST['phone'];
-        $rfc = $_POST['rfc'];
-        $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-
-        $sql = "INSERT INTO employees (name, level, phone, rfc, password, deleted) VALUES (?, ?, ?, ?, ?, 0)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sisss", $name, $level, $phone, $rfc, $password);
-
-        if ($stmt->execute()) {
-            $success_message = "Nuevo empleado agregado exitosamente.";
+        if ($error = validatePhone($phone)) {
+            $errors[] = $error;
+        }
+        
+        // Validate RFC (varchar(13))
+        $rfc = trim($_POST['rfc']);
+        if ($error = validateRFC($rfc)) {
+            $errors[] = $error;
+        }
+        
+        // Validate password
+        $password = $_POST['password'];
+        if (strlen($password) < 8) {
+            $errors[] = "La contraseña debe tener al menos 8 caracteres.";
+        }
+        
+        if (empty($errors)) {
+            // Sanitize inputs for database
+            $name = $conn->real_escape_string($name);
+            $phone = $conn->real_escape_string($phone);
+            $rfc = $conn->real_escape_string($rfc);
+            $password = password_hash($password, PASSWORD_BCRYPT);
+            
+            $sql = "INSERT INTO employees (name, level, phone, rfc, password, deleted) VALUES (?, ?, ?, ?, ?, 0)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sisss", $name, $level, $phone, $rfc, $password);
+            
+            if ($stmt->execute()) {
+                $success_message = "Nuevo empleado agregado exitosamente.";
+            } else {
+                $error_message = "Error: " . $conn->error;
+            }
         } else {
-            $error_message = "Error: " . $conn->error;
+            $error_message = implode("<br>", $errors);
         }
     }
 ?>
@@ -60,15 +101,15 @@
                 <form method="post" action="">
                     <div class="mb-3">
                         <label for="name" class="form-label">Nombre del Empleado</label>
-                        <input type="text" class="form-control" name="name" required>
+                        <input type="text" class="form-control" name="name" maxlength="32" required>
                     </div>
                     <div class="mb-3">
                         <label for="level" class="form-label">Nivel</label>
-                        <input type="number" class="form-control" name="level" required>
+                        <input type="number" class="form-control" name="level" min="0" max="4" required>
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Teléfono</label>
-                        <input type="text" class="form-control" name="phone" pattern="\d{1,20}" title="El número de teléfono debe tener hasta 20 dígitos" required>
+                        <input type="text" class="form-control" name="phone" pattern="\d{10}" title="El número de teléfono debe tener exactamente 10 dígitos" maxlength="10" required>
                     </div>
                     <div class="mb-3">
                         <label for="rfc" class="form-label">RFC</label>
@@ -76,7 +117,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" name="password" required>
+                        <input type="password" class="form-control" name="password" minlength="8" required>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Agregar Empleado</button>

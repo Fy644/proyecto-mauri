@@ -54,8 +54,25 @@
         }
 
         if (isset($_POST['update_profile'])) {
-            $new_email = $_POST['email'];
-            $new_fullname = $_POST['fullname'];
+            $new_email = trim($_POST['email']);
+            $new_fullname = trim($_POST['fullname']);
+            $errors = [];
+
+            // Validate email
+            if (empty($new_email)) {
+                $errors[] = "El correo electrónico es requerido.";
+            } elseif (!filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "El formato del correo electrónico no es válido.";
+            } elseif (strlen($new_email) > 100) {
+                $errors[] = "El correo electrónico no puede tener más de 100 caracteres.";
+            }
+
+            // Validate fullname
+            if (empty($new_fullname)) {
+                $errors[] = "El nombre completo es requerido.";
+            } elseif (strlen($new_fullname) > 100) {
+                $errors[] = "El nombre completo no puede tener más de 100 caracteres.";
+            }
 
             // Handle profile picture upload
             $targetDir = "userpfp/";
@@ -63,7 +80,7 @@
             $targetFile = $targetDir . $profile_picture_name . ".png";
 
             if (!is_writable($targetDir)) {
-                $error_message = "The profile picture folder is not writable. Please check folder permissions.";
+                $errors[] = "La carpeta de fotos de perfil no tiene permisos de escritura.";
             } else {
                 // Only process file upload if a file was actually selected
                 if (isset($_FILES["profile_picture"]) && $_FILES["profile_picture"]["error"] !== UPLOAD_ERR_NO_FILE) {
@@ -72,17 +89,21 @@
 
                     if ($_FILES["profile_picture"]["error"] === UPLOAD_ERR_OK) {
                         if ($fileExtension === "png") {
-                            if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $targetFile)) {
-                                $update_query = $conn->prepare("UPDATE users SET email = ?, fullname = ?, profile_picture = ? WHERE id = ?");
-                                $update_query->bind_param("sssi", $new_email, $new_fullname, $targetFile, $user_id);
+                            if ($_FILES["profile_picture"]["size"] > 5000000) { // 5MB limit
+                                $errors[] = "La imagen es demasiado grande. El tamaño máximo es 5MB.";
                             } else {
-                                $error_message = "Error al mover el archivo subido. Verifique los permisos de la carpeta.";
+                                if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $targetFile)) {
+                                    $update_query = $conn->prepare("UPDATE users SET email = ?, fullname = ?, profile_picture = ? WHERE id = ?");
+                                    $update_query->bind_param("sssi", $new_email, $new_fullname, $targetFile, $user_id);
+                                } else {
+                                    $errors[] = "Error al mover el archivo subido. Verifique los permisos de la carpeta.";
+                                }
                             }
                         } else {
-                            $error_message = "Solo se permiten archivos PNG para la foto de perfil.";
+                            $errors[] = "Solo se permiten archivos PNG para la foto de perfil.";
                         }
                     } else {
-                        $error_message = "Error al subir el archivo: " . $_FILES["profile_picture"]["error"];
+                        $errors[] = "Error al subir el archivo: " . $_FILES["profile_picture"]["error"];
                     }
                 } else {
                     // If no file was uploaded, just update email and fullname
@@ -90,24 +111,44 @@
                     $update_query->bind_param("ssi", $new_email, $new_fullname, $user_id);
                 }
 
-                // Execute the update query if it was prepared
-                if (isset($update_query) && $update_query->execute()) {
+                // Execute the update query if it was prepared and there are no errors
+                if (empty($errors) && isset($update_query) && $update_query->execute()) {
                     $success_message = "Perfil actualizado con éxito.";
-                } else if (!isset($error_message)) {
+                } else if (!empty($errors)) {
+                    $error_message = implode("<br>", $errors);
+                } else {
                     $error_message = "Error al actualizar el perfil.";
                 }
             }
         }
 
         if (isset($_POST['update_password'])) {
-            $new_password = password_hash($_POST['new_password'], PASSWORD_BCRYPT);
-            $update_password_query = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-            $update_password_query->bind_param("si", $new_password, $user_id);
+            $new_password = trim($_POST['new_password']);
+            $errors = [];
 
-            if ($update_password_query->execute()) {
-                $success_message = "Contraseña actualizada con éxito.";
+            // Validate password
+            if (empty($new_password)) {
+                $errors[] = "La contraseña es requerida.";
+            } elseif (strlen($new_password) < 8) {
+                $errors[] = "La contraseña debe tener al menos 8 caracteres.";
+            } elseif (strlen($new_password) > 100) {
+                $errors[] = "La contraseña no puede tener más de 100 caracteres.";
+            } elseif (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/", $new_password)) {
+                $errors[] = "La contraseña debe contener al menos una letra mayúscula, una minúscula y un número.";
+            }
+
+            if (empty($errors)) {
+                $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
+                $update_password_query = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $update_password_query->bind_param("si", $hashed_password, $user_id);
+
+                if ($update_password_query->execute()) {
+                    $success_message = "Contraseña actualizada con éxito.";
+                } else {
+                    $error_message = "Error al actualizar la contraseña.";
+                }
             } else {
-                $error_message = "Error al actualizar la contraseña.";
+                $error_message = implode("<br>", $errors);
             }
         }
     }

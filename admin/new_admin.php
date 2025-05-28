@@ -17,17 +17,39 @@
         exit();
     }
 
+    require_once '../includes/validation.php';
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $username = substr($_POST['username'], 0, 50); // Limit username to 50 characters
-        $password = substr($_POST['password'], 0, 255); // Limit password to 255 characters
-        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+        $errors = [];
+        
+        // Validate username (varchar(32))
+        $username = trim($_POST['username']);
+        if ($error = validateVarchar($username, 'nombre de usuario', 32)) {
+            $errors[] = $error;
+        }
+        
+        // Validate password
+        $password = $_POST['password'];
+        if (strlen($password) < 8) {
+            $errors[] = "La contraseña debe tener al menos 8 caracteres.";
+        }
+        
+        if (empty($errors)) {
+            // Sanitize inputs for database
+            $username = $conn->real_escape_string($username);
+            $password = password_hash($password, PASSWORD_BCRYPT);
+            
+            $sql = "INSERT INTO admins (username, password) VALUES ('$username', '$password')";
 
-        $sql = "INSERT INTO admins (username, password) VALUES ('$username', '$hashed_password')";
-
-        if ($conn->query($sql) === TRUE) {
-            $success_message = "Nuevo administrador agregado exitosamente.";
+            if ($conn->query($sql) === TRUE) {
+                $success_message = "Administrador creado exitosamente.";
+                // Clear form
+                $_POST = array();
+            } else {
+                $error_message = "Error: " . $sql . "<br>" . $conn->error;
+            }
         } else {
-            $error_message = "Error: " . $sql . "<br>" . $conn->error;
+            $error_message = implode("<br>", $errors);
         }
     }
 ?>
@@ -52,12 +74,12 @@
                 <?php endif; ?>
                 <form method="post" action="">
                     <div class="mb-3">
-                        <label for="username" class="form-label">Usuario</label>
-                        <input type="text" class="form-control" name="username" maxlength="50" required>
+                        <label for="username" class="form-label">Nombre de Usuario</label>
+                        <input type="text" class="form-control" name="username" maxlength="32" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" name="password" maxlength="255" required>
+                        <input type="password" class="form-control" name="password" minlength="8" required>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Agregar Administrador</button>

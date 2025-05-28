@@ -29,7 +29,11 @@
         }
     }
 
+    require_once '../includes/validation.php';
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $errors = [];
+        
         if (isset($_POST['delete'])) {
             $car_id = intval($_POST['car_id']);
             $sql = "UPDATE carros SET deleted = 1 WHERE id = $car_id";
@@ -41,60 +45,88 @@
                 $error_message = "Error: " . $sql . "<br>" . $conn->error;
             }
         } else {
-            $car_id = intval($_POST['car_id']);
-            $name = substr($_POST['name'], 0, 32); // Limit to 32 characters
-            $price = intval($_POST['price']);
-            $type = substr($_POST['type'], 0, 16); // Limit to 16 characters
+            // Validate name (varchar(32))
+            $name = trim($_POST['name']);
+            if ($error = validateVarchar($name, 'nombre del auto', 32)) {
+                $errors[] = $error;
+            }
+            
+            // Validate price (int)
+            $price = $_POST['price'];
+            if ($error = validateInt($price, 'precio')) {
+                $errors[] = $error;
+            }
+            if ($price <= 0) {
+                $errors[] = "El precio debe ser mayor a 0.";
+            }
+            
+            // Validate type (varchar(16))
+            $type = trim($_POST['type']);
+            if ($error = validateVarchar($type, 'tipo', 16)) {
+                $errors[] = $error;
+            }
+            
+            // Validate featured (tinyint)
             $featured = isset($_POST['featured']) ? 1 : 0;
-            $description = substr($_POST['description'], 0, 65535); // Limit to TEXT size
-            $year = intval($_POST['year']);
+            
+            // Validate description (text)
+            $description = trim($_POST['description']);
+            if ($error = validateText($description, 'descripción')) {
+                $errors[] = $error;
+            }
+            
+            // Validate year (int)
+            $year = $_POST['year'];
+            if ($error = validateInt($year, 'año')) {
+                $errors[] = $error;
+            }
+            $current_year = date('Y');
+            if ($year < 1900 || $year > $current_year + 1) {
+                $errors[] = "El año debe estar entre 1900 y " . ($current_year + 1);
+            }
+            
+            // Validate used (tinyint)
             $used = isset($_POST['used']) ? 1 : 0;
-
-            // Validate inputs
-            if (empty($name) || $price <= 0 || empty($type) || empty($description) || $year <= 0) {
-                $error_message = "Todos los campos son obligatorios y deben ser válidos.";
-            } else {
-                $img_name = $car['img_name']; // Default to current image name
-                $update_img_name = false;
-
-                if (!empty($_FILES['image']['name'])) {
-                    $targetDir = "../images/";
-                    $fileInfo = pathinfo($_FILES["image"]["name"]);
-                    $new_img_name = substr($fileInfo['filename'], 0, 32); // Limit to 32 characters
-                    $fileExtension = strtolower($fileInfo['extension']);
-                    $targetFile = $targetDir . $new_img_name . ".png";
-
-                    if ($fileExtension !== "png") {
-                        $error_message = "Solo se permiten archivos PNG.";
-                    } else {
-                        if (!move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                            $error_message = "Error al mover el archivo subido. Verifica los permisos de la carpeta.";
-                        } else {
-                            $img_name = $new_img_name;
-                            $update_img_name = true;
-                        }
+            
+            // Handle image upload if provided
+            $img_name = $car['img_name']; // Keep existing image by default
+            if (!empty($_FILES['image']['name'])) {
+                if ($_FILES['image']['type'] !== 'image/png') {
+                    $errors[] = "La imagen debe ser en formato PNG.";
+                } else {
+                    $img_name = uniqid() . '.png';
+                    if (!move_uploaded_file($_FILES['image']['tmp_name'], '../img/cars/' . $img_name)) {
+                        $errors[] = "Error al subir la imagen.";
                     }
                 }
-
+            }
+            
+            if (empty($errors)) {
+                // Sanitize inputs for database
+                $name = $conn->real_escape_string($name);
+                $type = $conn->real_escape_string($type);
+                $description = $conn->real_escape_string($description);
+                $img_name = $conn->real_escape_string($img_name);
+                
                 $sql = "UPDATE carros SET 
                         name = '$name', 
-                        price = '$price', 
-                        type = '$type', 
-                        featured = '$featured', 
-                        description = '$description', 
-                        year = '$year', 
-                        used = '$used'";
-                if ($update_img_name) {
-                    $sql .= ", img_name = '$img_name'";
-                }
-                $sql .= " WHERE id = $car_id";
+                        price = '$price',
+                        type = '$type',
+                        featured = '$featured',
+                        description = '$description',
+                        img_name = '$img_name',
+                        year = '$year',
+                        used = '$used'
+                        WHERE id = " . intval($_POST['car_id']);
 
                 if ($conn->query($sql) === TRUE) {
                     $success_message = "Coche actualizado exitosamente.";
-                    $car = $conn->query("SELECT * FROM carros WHERE id = $car_id")->fetch_assoc(); // Refresh car data
+                    $car = $conn->query("SELECT * FROM carros WHERE id = " . intval($_POST['car_id']))->fetch_assoc();
                 } else {
                     $error_message = "Error: " . $sql . "<br>" . $conn->error;
                 }
+            } else {
+                $error_message = implode("<br>", $errors);
             }
         }
     }
@@ -142,48 +174,41 @@
                     <form method="post" action="" enctype="multipart/form-data">
                         <input type="hidden" name="car_id" value="<?php echo $car['id']; ?>">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Nombre del Coche</label>
+                            <label for="name" class="form-label">Nombre del Auto</label>
                             <input type="text" class="form-control" name="name" maxlength="32" value="<?php echo htmlspecialchars($car['name']); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="price" class="form-label">Precio</label>
-                            <input type="number" class="form-control" name="price" value="<?php echo htmlspecialchars($car['price']); ?>" required>
+                            <input type="number" class="form-control" name="price" min="1" value="<?php echo htmlspecialchars($car['price']); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="type" class="form-label">Tipo</label>
-                            <select name="type" class="form-select" required>
-                                <option value="sport" <?php echo $car['type'] == 'sport' ? 'selected' : ''; ?>>Deportivo</option>
-                                <option value="sedan" <?php echo $car['type'] == 'sedan' ? 'selected' : ''; ?>>Sedán</option>
-                                <option value="suv" <?php echo $car['type'] == 'suv' ? 'selected' : ''; ?>>SUV</option>
-                                <option value="truck" <?php echo $car['type'] == 'truck' ? 'selected' : ''; ?>>Camioneta</option>
-                                <option value="van" <?php echo $car['type'] == 'van' ? 'selected' : ''; ?>>Van</option>
-                                <option value="hatchback" <?php echo $car['type'] == 'hatchback' ? 'selected' : ''; ?>>Hatchback</option>
-                                <option value="coupe" <?php echo $car['type'] == 'coupe' ? 'selected' : ''; ?>>Coupé</option>
-                            </select>
+                            <input type="text" class="form-control" name="type" maxlength="16" value="<?php echo htmlspecialchars($car['type']); ?>" required>
                         </div>
-                        <div class="mb-3 d-flex align-items-center gap-3">
-                            <div>
-                                <label for="featured" class="form-check-label">Destacado</label>
-                                <input type="checkbox" class="form-check-input" name="featured" <?php echo $car['featured'] ? 'checked' : ''; ?>>
-                            </div>
-                            <div>
-                                <label for="used" class="form-check-label">Usado</label>
-                                <input type="checkbox" class="form-check-input" name="used" <?php echo $car['used'] ? 'checked' : ''; ?>>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="featured" id="featured" <?php echo $car['featured'] ? 'checked' : ''; ?>>
+                                <label class="form-check-label" for="featured">Destacado</label>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Descripción</label>
-                            <textarea class="form-control" name="description" maxlength="65535" rows="3" required><?php echo htmlspecialchars($car['description']); ?></textarea>
+                            <textarea class="form-control" name="description" rows="3" required><?php echo htmlspecialchars($car['description']); ?></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="year" class="form-label">Año</label>
-                            <input type="number" class="form-control" name="year" value="<?php echo htmlspecialchars($car['year']); ?>" required>
+                            <input type="number" class="form-control" name="year" min="1900" max="<?php echo date('Y') + 1; ?>" value="<?php echo htmlspecialchars($car['year']); ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="image" class="form-label">Imagen Actual</label><br>
-                            <img src="../images/<?php echo htmlspecialchars($car['img_name']); ?>.png" alt="Imagen del Coche" style="width: 200px; height: auto; margin-bottom: 10px;"><br>
-                            <label for="image" class="form-label">Reemplazar Imagen (Solo PNG)</label>
-                            <input type="file" class="form-control" name="image" accept="image/png">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="used" id="used" <?php echo $car['used'] ? 'checked' : ''; ?>>
+                                <label class="form-check-label" for="used">Usado</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Imagen (PNG)</label>
+                            <input type="file" class="form-control" name="image" accept=".png">
+                            <small class="text-muted">Deja en blanco para mantener la imagen actual</small>
                         </div>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Actualizar Coche</button>

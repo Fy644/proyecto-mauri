@@ -48,47 +48,53 @@
         exit();
     }
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
-        $user_username = $_POST['username'];
-        $user_password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-        $user_email = $_POST['email'];
-        $user_fullname = $_POST['fullname'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $username = trim($_POST['username']);
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm_password'];
+        $email = trim($_POST['email']);
+        $fullname = trim($_POST['fullname']);
 
-        // Handle profile picture upload
-        $targetDir = "userpfp/";
-        $fileInfo = pathinfo($_FILES["profile_picture"]["name"]);
-        $profile_picture_name = uniqid(); // Generate a unique filename
-        $fileExtension = strtolower($fileInfo['extension']);
-        $targetFile = $targetDir . $profile_picture_name . ".png";
-
-        if (!is_writable($targetDir)) {
-            $error_message = "The profile picture folder is not writable. Please check folder permissions.";
-        } else {
-            if ($_FILES["profile_picture"]["error"] === UPLOAD_ERR_OK) {
-                if ($fileExtension === "png") {
-                    if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $targetFile)) {
-                        $sql = "INSERT INTO users (username, password, email, fullname, profile_picture) VALUES (?, ?, ?, ?, ?)";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("sssss", $user_username, $user_password, $user_email, $user_fullname, $targetFile);
-
-                        if ($stmt->execute()) {
-                            // Automatically log in the user after registration
-                            $_SESSION['user_id'] = $conn->insert_id;
-                            $_SESSION['username'] = $user_username;
-                            header("Location: index.php");
-                            exit();
-                        } else {
-                            $error_message = "Error al registrar el usuario.";
-                        }
-                    } else {
-                        $error_message = "Error al mover el archivo subido. Verifique los permisos de la carpeta.";
-                    }
-                } else {
-                    $error_message = "Solo se permiten archivos PNG para la foto de perfil.";
-                }
+        // Validate username (max 50 chars, alphanumeric and underscores)
+        if (!preg_match('/^[a-zA-Z0-9_]{1,50}$/', $username)) {
+            $error = "El nombre de usuario debe contener solo letras, números y guiones bajos, y tener máximo 50 caracteres.";
+        }
+        // Validate password
+        elseif (strlen($password) < 8) {
+            $error = "La contraseña debe tener al menos 8 caracteres.";
+        }
+        // Validate password confirmation
+        elseif ($password !== $confirm_password) {
+            $error = "Las contraseñas no coinciden.";
+        }
+        // Validate email (max 255 chars, valid email format)
+        elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 255) {
+            $error = "Por favor ingresa un email válido.";
+        }
+        // Validate fullname (max 255 chars, only letters, spaces and apostrophes)
+        elseif (!preg_match('/^[a-zA-Z\' ]{1,255}$/', $fullname)) {
+            $error = "El nombre completo debe contener solo letras, espacios y apóstrofes, y tener máximo 255 caracteres.";
+        }
+        else {
+            // Check if username already exists
+            $check_stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+            $check_stmt->bind_param("s", $username);
+            $check_stmt->execute();
+            if ($check_stmt->get_result()->num_rows > 0) {
+                $error = "Este nombre de usuario ya está en uso.";
             } else {
-                $error_message = "Error al subir el archivo: " . $_FILES["profile_picture"]["error"];
+                // Hash password and insert user
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $conn->prepare("INSERT INTO users (username, password, email, fullname) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("ssss", $username, $hashed_password, $email, $fullname);
+                if ($stmt->execute()) {
+                    $success = "¡Registro exitoso! Ahora puedes iniciar sesión.";
+                } else {
+                    $error = "Error al registrar usuario: " . htmlspecialchars($conn->error);
+                }
+                $stmt->close();
             }
+            $check_stmt->close();
         }
     }
 
@@ -171,25 +177,32 @@
         <?php include 'user_navbar.php'; ?>
         <div class="container mt-5">
             <h1 class="text-center">Registro de Usuario</h1>
-            <?php if (isset($error_message)): ?>
-                <div class="alert alert-danger"><?php echo $error_message; ?></div>
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger"><?php echo $error; ?></div>
+            <?php elseif (isset($success)): ?>
+                <div class="alert alert-success"><?php echo $success; ?></div>
             <?php endif; ?>
             <form method="post" action="" enctype="multipart/form-data">
                 <div class="mb-3">
-                    <label for="fullname" class="form-label">Nombre Completo</label>
-                    <input type="text" class="form-control" name="fullname" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Correo Electrónico</label>
-                    <input type="email" class="form-control" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="username" class="form-label">Usuario</label>
-                    <input type="text" class="form-control" name="username" required>
+                    <label for="username" class="form-label">Nombre de Usuario</label>
+                    <input type="text" class="form-control" name="username" maxlength="50" pattern="[a-zA-Z0-9_]+" title="Solo se permiten letras, números y guiones bajos (máximo 50 caracteres)" required>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" name="password" required>
+                    <input type="password" class="form-control" name="password" minlength="8" required>
+                    <div class="form-text">La contraseña debe tener al menos 8 caracteres.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
+                    <input type="password" class="form-control" name="confirm_password" minlength="8" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" maxlength="255" required>
+                </div>
+                <div class="mb-3">
+                    <label for="fullname" class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" name="fullname" maxlength="255" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, espacios y apóstrofes (máximo 255 caracteres)" required>
                 </div>
                 <div class="mb-3">
                     <label for="profile_picture" class="form-label">Foto de Perfil (solo PNG)</label>

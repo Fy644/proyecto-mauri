@@ -6,14 +6,47 @@
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
 
-    if (!isset($_SESSION['purchase_details'])) {
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $database = "agencia";
+    $conn = new mysqli($servername, $username, $password, $database);
+    if ($conn->connect_error) {
+        die("Error: " . $conn->connect_error);
+        exit();
+    }
+
+    if (!isset($_GET['id'])) {
         header("Location: index.php");
         exit();
     }
 
-    require('fpdf/fpdf.php'); // Ensure the FPDF library is installed and available
+    $sale_id = intval($_GET['id']);
+    $sale = $conn->query("SELECT * FROM sales WHERE id = $sale_id")->fetch_assoc();
+    if (!$sale) {
+        die("Venta no encontrada.");
+    }
 
-    $details = $_SESSION['purchase_details'];
+    // Get car info
+    $car = $conn->query("SELECT name, year FROM carros WHERE id = {$sale['id_car']}")->fetch_assoc();
+    // Get employee info
+    $employee = $conn->query("SELECT name FROM employees WHERE id = {$sale['employee_id']}")->fetch_assoc();
+
+    $details = [
+        'client_name'   => $sale['client'],
+        'car_name'      => $car ? $car['name'] : '',
+        'car_year'      => $car ? $car['year'] : '',
+        'price'         => $sale['price'],
+        'down_payment'  => $sale['down'],
+        'monthly'       => $sale['monthly'],
+        'monthly_rate'  => $sale['monthly'] ? ($sale['months'] > 0 ? ($sale['price'] - $sale['down']) / $sale['months'] : 0) : 0,
+        'months'        => $sale['months'],
+        'employee_name' => $employee ? $employee['name'] : '',
+        'datetimePurchase' => $sale['datetimePurchase'],
+        'waranty'          => $sale['waranty'],
+    ];
+
+    require('fpdf/fpdf.php'); // Ensure the FPDF library is installed and available
 
     class PDF extends FPDF {
         function Header() {
@@ -45,9 +78,9 @@
     $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Información del Cliente:'), 0, 1);
     $pdf->SetFont('Arial', '', 12);
     $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Nombre: ') . iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $details['client_name']), 0, 1);
-    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Fecha de Compra: ') . date('d/m/Y'), 0, 1);
-    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Fecha de Entrega: ') . date('d/m/Y', strtotime('+1 week')), 0, 1);
-    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Garantía válida hasta: ') . date('d/m/Y', strtotime('+1 year')), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Fecha de Compra: ') . date('d/m/Y', strtotime($details['datetimePurchase'])), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Fecha de Entrega: ') . date('d/m/Y', strtotime($details['datetimePurchase'] . ' +1 week')), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Garantía válida hasta: ') . date('d/m/Y', strtotime($details['waranty'])), 0, 1);
     $pdf->Ln(5);
 
     // Car Information

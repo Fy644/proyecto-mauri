@@ -1,3 +1,67 @@
+<?php
+    session_start();
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $database = "agencia";
+
+    $conn = new mysqli($servername, $username, $password, $database);
+
+    if ($conn->connect_error) {
+        die("Error: " . $conn->connect_error);
+        exit();
+    }
+
+    $login_error = null;
+    $show_login_popup = false;
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
+        $user_username = $_POST['username'];
+        $user_password = $_POST['password'];
+
+        $sql = "SELECT * FROM users WHERE username = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $user_username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            if (password_verify($user_password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                header("Location: contacts.php");
+                exit();
+            } else {
+                $login_error = "Contraseña incorrecta.";
+                $show_login_popup = true;
+            }
+        } else {
+            $login_error = "Usuario no encontrado.";
+            $show_login_popup = true;
+        }
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout'])) {
+        session_destroy();
+        header("Location: contacts.php");
+        exit();
+    }
+
+    // Fetch user data if logged in
+    $user_data = [];
+    if (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+        $sql = "SELECT profile_picture FROM users WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+        }
+    }
+?>
 <!DOCTYPE html>
 <html lang="es">
     <head>
@@ -168,10 +232,7 @@
                 font-size: 0.9rem;
                 color: #6c757d;
                 text-decoration: none;
-                padding: 8px 15px;
-                border-radius: 5px;
                 background-color: #f8f9fa;
-                border: 1px solid #dee2e6;
                 transition: all 0.3s ease;
             }
             .admin-login:hover {

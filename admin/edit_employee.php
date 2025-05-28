@@ -29,7 +29,11 @@
         }
     }
 
+    require_once '../includes/validation.php';
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $errors = [];
+        
         if (isset($_POST['delete'])) {
             $employee_id = intval($_POST['employee_id']);
             $sql = "UPDATE employees SET deleted = 1 WHERE id = $employee_id";
@@ -41,25 +45,61 @@
                 $error_message = "Error: " . $sql . "<br>" . $conn->error;
             }
         } else {
-            $employee_id = intval($_POST['employee_id']);
-            $name = $_POST['name'];
+            // Validate name (varchar(32))
+            $name = trim($_POST['name']);
+            if ($error = validateVarchar($name, 'nombre del empleado', 32)) {
+                $errors[] = $error;
+            }
+            
+            // Validate level (int)
             $level = $_POST['level'];
+            if ($error = validateInt($level, 'nivel')) {
+                $errors[] = $error;
+            }
+            if ($level < 0 || $level > 4) {
+                $errors[] = "El nivel debe estar entre 0 y 4.";
+            }
+            
+            // Validate phone (bigint(20))
             $phone = $_POST['phone'];
-            $rfc = $_POST['rfc'];
-            $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null;
+            if ($error = validatePhone($phone)) {
+                $errors[] = $error;
+            }
+            
+            // Validate RFC (varchar(13))
+            $rfc = trim($_POST['rfc']);
+            if ($error = validateRFC($rfc)) {
+                $errors[] = $error;
+            }
+            
+            // Validate password if provided
+            $password = !empty($_POST['password']) ? $_POST['password'] : null;
+            if ($password && strlen($password) < 8) {
+                $errors[] = "La contraseña debe tener al menos 8 caracteres.";
+            }
+            
+            if (empty($errors)) {
+                // Sanitize inputs for database
+                $name = $conn->real_escape_string($name);
+                $phone = $conn->real_escape_string($phone);
+                $rfc = $conn->real_escape_string($rfc);
+                $password = $password ? password_hash($password, PASSWORD_BCRYPT) : null;
+                
+                $sql = "UPDATE employees SET 
+                        name = '$name', 
+                        level = '$level',
+                        phone = '$phone',
+                        rfc = '$rfc'" . ($password ? ", password = '$password'" : "") . "
+                        WHERE id = " . intval($_POST['employee_id']);
 
-            $sql = "UPDATE employees SET 
-                    name = '$name', 
-                    level = '$level',
-                    phone = '$phone',
-                    rfc = '$rfc'" . ($password ? ", password = '$password'" : "") . "
-                    WHERE id = $employee_id";
-
-            if ($conn->query($sql) === TRUE) {
-                $success_message = "Empleado actualizado exitosamente.";
-                $employee = $conn->query("SELECT * FROM employees WHERE id = $employee_id")->fetch_assoc(); // Refresh employee data
+                if ($conn->query($sql) === TRUE) {
+                    $success_message = "Empleado actualizado exitosamente.";
+                    $employee = $conn->query("SELECT * FROM employees WHERE id = " . intval($_POST['employee_id']))->fetch_assoc();
+                } else {
+                    $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                }
             } else {
-                $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                $error_message = implode("<br>", $errors);
             }
         }
     }
@@ -108,15 +148,15 @@
                         <input type="hidden" name="employee_id" value="<?php echo $employee['id']; ?>">
                         <div class="mb-3">
                             <label for="name" class="form-label">Nombre del Empleado</label>
-                            <input type="text" class="form-control" name="name" value="<?php echo htmlspecialchars($employee['name']); ?>" required>
+                            <input type="text" class="form-control" name="name" maxlength="32" value="<?php echo htmlspecialchars($employee['name']); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="level" class="form-label">Nivel</label>
-                            <input type="number" class="form-control" name="level" value="<?php echo htmlspecialchars($employee['level']); ?>" required>
+                            <input type="number" class="form-control" name="level" min="0" max="4" value="<?php echo htmlspecialchars($employee['level']); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Teléfono</label>
-                            <input type="text" class="form-control" name="phone" pattern="\d{1,20}" title="El número de teléfono debe tener hasta 20 dígitos" value="<?php echo htmlspecialchars($employee['phone']); ?>" required>
+                            <input type="text" class="form-control" name="phone" pattern="\d{10}" title="El número de teléfono debe tener exactamente 10 dígitos" maxlength="10" value="<?php echo htmlspecialchars($employee['phone']); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="rfc" class="form-label">RFC</label>
@@ -124,7 +164,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Nueva Contraseña (opcional)</label>
-                            <input type="password" class="form-control" name="password">
+                            <input type="password" class="form-control" name="password" minlength="8">
                         </div>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Actualizar Empleado</button>

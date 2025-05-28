@@ -62,20 +62,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $review_text = trim($_POST['review_text']);
     $reviewer_name = htmlspecialchars($user_fullname);
 
-    // Only allow review if car_id is in $cars
+    // Validate car ownership
     $owned_car_ids = array_column($cars, 'id');
-    if (in_array($car_id, $owned_car_ids) && $score >= 1 && $score <= 5 && $review_text !== '') {
-        $review_text_escaped = $conn->real_escape_string($review_text);
-        $sql = "INSERT INTO reviews (rating, name, score, id_car, deleted) VALUES ('$review_text_escaped', '$reviewer_name', $score, $car_id, 0)";
-        if ($conn->query($sql) === TRUE) {
-            // Prevent resubmission on reload
-            header("Location: review_car.php?success=1");
-            exit();
+    if (!in_array($car_id, $owned_car_ids)) {
+        $error = "Solo puedes reseñar coches que has comprado.";
+    }
+    // Validate score (1-5)
+    elseif ($score < 1 || $score > 5) {
+        $error = "La puntuación debe estar entre 1 y 5.";
+    }
+    // Validate review text
+    elseif (empty($review_text)) {
+        $error = "Por favor escribe tu reseña.";
+    }
+    // Validate review text length (text field in database)
+    elseif (strlen($review_text) > 65535) {
+        $error = "La reseña es demasiado larga.";
+    }
+    // Validate reviewer name
+    elseif (empty($reviewer_name) || strlen($reviewer_name) > 32) {
+        $error = "El nombre del reseñador no es válido.";
+    }
+    else {
+        // Check if user has already reviewed this car
+        $check_stmt = $conn->prepare("SELECT id FROM reviews WHERE id_car = ? AND name = ? AND deleted = 0");
+        $check_stmt->bind_param("is", $car_id, $reviewer_name);
+        $check_stmt->execute();
+        if ($check_stmt->get_result()->num_rows > 0) {
+            $error = "Ya has reseñado este coche.";
         } else {
-            $error = "Error al guardar la reseña: " . htmlspecialchars($conn->error);
+            // Insert the review
+            $stmt = $conn->prepare("INSERT INTO reviews (rating, name, score, id_car, deleted) VALUES (?, ?, ?, ?, 0)");
+            $stmt->bind_param("ssii", $review_text, $reviewer_name, $score, $car_id);
+            if ($stmt->execute()) {
+                // Prevent resubmission on reload
+                header("Location: review_car.php?success=1");
+                exit();
+            } else {
+                $error = "Error al guardar la reseña: " . htmlspecialchars($conn->error);
+            }
+            $stmt->close();
         }
-    } else {
-        $error = "Solo puedes reseñar coches que has comprado y debes completar todos los campos.";
+        $check_stmt->close();
     }
 }
 
@@ -161,7 +189,8 @@ while ($row = $recent_query->fetch_assoc()) {
             </div>
             <div class="mb-3">
                 <label for="review_text" class="form-label">Tu reseña</label>
-                <textarea name="review_text" class="form-control" rows="4" maxlength="500" required></textarea>
+                <textarea name="review_text" class="form-control" rows="4" maxlength="65535" required></textarea>
+                <div class="form-text">Comparte tu experiencia con el vehículo.</div>
             </div>
             <button type="submit" name="submit_review" class="btn btn-primary">Enviar Reseña</button>
         </form>

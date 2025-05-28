@@ -70,23 +70,65 @@
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create_appointment'])) {
         $datetime = date('Y-m-d H:00:00', strtotime($_POST['datetime'])); // Round to the nearest hour
-        $client_name = substr($_POST['client_name'], 0, 50); // Limit to 50 characters
-        $phone = substr($_POST['phone'], 0, 20); // Limit to 20 digits
-        $id_car = $_POST['id_car'];
-        $id_employee = $_POST['id_employee'];
+        $client_name = trim($_POST['client_name']);
+        $phone = trim($_POST['phone']);
+        $id_car = intval($_POST['id_car']);
+        $id_employee = intval($_POST['id_employee']);
 
-        $hour = (int)date('H', strtotime($datetime));
-        if (strtotime($datetime) > time() && $hour >= 10 && $hour <= 16) { // Ensure the date is in the future and time is between 10 AM and 4 PM
-            $sql = "INSERT INTO citas (datetime, client_name, phone, id_car, id_employee, deleted) 
-                    VALUES ('$datetime', '$client_name', '$phone', '$id_car', '$id_employee', 0)";
-
-            if ($conn->query($sql) === TRUE) {
-                $success_message = "Cita creada con éxito.";
+        // Validate client name (max 50 chars, only letters, spaces and apostrophes)
+        if (!preg_match('/^[a-zA-Z\' ]{1,50}$/', $client_name)) {
+            $error_message = "El nombre debe contener solo letras, espacios y apóstrofes, y tener máximo 50 caracteres.";
+        }
+        // Validate phone (exactly 10 digits)
+        elseif (!preg_match('/^\d{10}$/', $phone)) {
+            $error_message = "El número de teléfono debe tener exactamente 10 dígitos.";
+        }
+        // Validate car and employee IDs
+        elseif ($id_car <= 0 || $id_employee <= 0) {
+            $error_message = "Por favor selecciona un coche y un empleado válidos.";
+        }
+        else {
+            $hour = (int)date('H', strtotime($datetime));
+            if (strtotime($datetime) > time() && $hour >= 10 && $hour <= 16) { // Ensure the date is in the future and time is between 10 AM and 4 PM
+                // Check if the car exists and is not deleted
+                $car_check = $conn->prepare("SELECT id FROM carros WHERE id = ? AND deleted = 0");
+                $car_check->bind_param("i", $id_car);
+                $car_check->execute();
+                if ($car_check->get_result()->num_rows === 0) {
+                    $error_message = "El coche seleccionado no está disponible.";
+                } else {
+                    // Check if the employee exists and is not deleted
+                    $emp_check = $conn->prepare("SELECT id FROM employees WHERE id = ? AND deleted = 0");
+                    $emp_check->bind_param("i", $id_employee);
+                    $emp_check->execute();
+                    if ($emp_check->get_result()->num_rows === 0) {
+                        $error_message = "El empleado seleccionado no está disponible.";
+                    } else {
+                        // Check if there's already an appointment at this time
+                        $time_check = $conn->prepare("SELECT id FROM citas WHERE datetime = ? AND deleted = 0");
+                        $time_check->bind_param("s", $datetime);
+                        $time_check->execute();
+                        if ($time_check->get_result()->num_rows > 0) {
+                            $error_message = "Ya existe una cita programada para esta fecha y hora.";
+                        } else {
+                            // Insert the appointment
+                            $stmt = $conn->prepare("INSERT INTO citas (datetime, client_name, phone, id_car, id_employee, deleted) VALUES (?, ?, ?, ?, ?, 0)");
+                            $stmt->bind_param("sssii", $datetime, $client_name, $phone, $id_car, $id_employee);
+                            if ($stmt->execute()) {
+                                $success_message = "Cita creada con éxito.";
+                            } else {
+                                $error_message = "Error al crear la cita: " . htmlspecialchars($conn->error);
+                            }
+                            $stmt->close();
+                        }
+                        $time_check->close();
+                    }
+                    $emp_check->close();
+                }
+                $car_check->close();
             } else {
-                $error_message = "Error: " . $sql . "<br>" . $conn->error;
+                $error_message = "La fecha de la cita debe ser en el futuro, y la hora debe estar entre las 10 AM y las 4 PM.";
             }
-        } else {
-            $error_message = "La fecha de la cita debe ser en el futuro, y la hora debe estar entre las 10 AM y las 4 PM.";
         }
     }
 ?>
@@ -169,11 +211,20 @@
                 </div>
                 <div class="mb-3">
                     <label for="client_name" class="form-label">Tu Nombre</label>
-                    <input type="text" class="form-control" name="client_name" maxlength="50" required>
+                    <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios (máximo 50 caracteres)"
+                        value="<?php
+                            if (isset($_SESSION['user_id'])) {
+                                $uid = intval($_SESSION['user_id']);
+                                $res = $conn->query("SELECT fullname FROM users WHERE id = $uid");
+                                if ($res && $row = $res->fetch_assoc()) {
+                                    echo htmlspecialchars($row['fullname']);
+                                }
+                            }
+                        ?>" required>
                 </div>
                 <div class="mb-3">
                     <label for="phone" class="form-label">Teléfono</label>
-                    <input type="text" class="form-control" name="phone" pattern="\d{1,20}" title="El número de teléfono debe tener hasta 20 dígitos" required>
+                    <input type="tel" class="form-control" name="phone" pattern="\d{10}" title="El número de teléfono debe tener exactamente 10 dígitos" required>
                 </div>
                 <div class="mb-3">
                     <label for="id_car" class="form-label">Selecciona un Coche</label>

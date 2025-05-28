@@ -68,43 +68,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['logout'])) {
     $problem = isset($_POST['problem']) ? trim($_POST['problem']) : null;
     $selected_employee_id = isset($_POST['employee_id']) && $_POST['employee_id'] !== '' ? intval($_POST['employee_id']) : null;
 
-    if ($car_id && $problem) {
-        if ($selected_employee_id) {
-            $employee_id = $selected_employee_id;
+    // Validate car selection
+    if (!$car_id) {
+        $error = "Por favor selecciona un coche.";
+    }
+    // Validate problem description
+    elseif (empty($problem)) {
+        $error = "Por favor describe el problema.";
+    }
+    // Validate problem length (text field in database)
+    elseif (strlen($problem) > 65535) {
+        $error = "La descripción del problema es demasiado larga.";
+    }
+    else {
+        // Validate car ownership
+        $car_check = $conn->prepare("SELECT id FROM sales WHERE id = ? AND client_id = ? AND deleted = 0");
+        $car_check->bind_param("ii", $car_id, $user_id);
+        $car_check->execute();
+        if ($car_check->get_result()->num_rows === 0) {
+            $error = "El coche seleccionado no está registrado a tu nombre.";
         } else {
-            $emp_res = $conn->query("SELECT id FROM employees WHERE deleted = 0 AND level >= 4 ORDER BY RAND() LIMIT 1");
-            $emp = $emp_res->fetch_assoc();
-            $employee_id = $emp ? $emp['id'] : 1;
-        }
+            if ($selected_employee_id) {
+                // Validate selected employee
+                $emp_check = $conn->prepare("SELECT id FROM employees WHERE id = ? AND level >= 4 AND deleted = 0");
+                $emp_check->bind_param("i", $selected_employee_id);
+                $emp_check->execute();
+                if ($emp_check->get_result()->num_rows === 0) {
+                    $error = "El empleado seleccionado no está disponible.";
+                } else {
+                    $employee_id = $selected_employee_id;
+                }
+                $emp_check->close();
+            } else {
+                // Assign random employee with level >= 4
+                $emp_res = $conn->query("SELECT id FROM employees WHERE deleted = 0 AND level >= 4 ORDER BY RAND() LIMIT 1");
+                $emp = $emp_res->fetch_assoc();
+                $employee_id = $emp ? $emp['id'] : null;
+                if (!$employee_id) {
+                    $error = "No hay empleados disponibles en este momento.";
+                }
+            }
 
-        $date_request = date('Y-m-d');
-        $problem_escaped = $conn->real_escape_string($problem);
+            if (!$error) {
+                $date_request = date('Y-m-d');
+                $problem_escaped = $conn->real_escape_string($problem);
 
-        // Determine waranty status for this sale
-        $waranty = 0;
-        $sale_stmt = $conn->prepare("SELECT waranty FROM sales WHERE id = ? AND client_id = ? AND deleted = 0");
-        $sale_stmt->bind_param("ii", $car_id, $user_id);
-        $sale_stmt->execute();
-        $sale_stmt->bind_result($waranty_date);
-        if ($sale_stmt->fetch()) {
-            if ($waranty_date && $waranty_date > $date_request) {
-                $waranty = 1;
+                // Determine warranty status for this sale
+                $waranty = 0;
+                $sale_stmt = $conn->prepare("SELECT waranty FROM sales WHERE id = ? AND client_id = ? AND deleted = 0");
+                $sale_stmt->bind_param("ii", $car_id, $user_id);
+                $sale_stmt->execute();
+                $sale_stmt->bind_result($waranty_date);
+                if ($sale_stmt->fetch()) {
+                    if ($waranty_date && $waranty_date > $date_request) {
+                        $waranty = 1;
+                    }
+                }
+                $sale_stmt->close();
+
+                // Insert service request
+                $stmt = $conn->prepare("INSERT INTO service (id_employee, date_request, date_finish, date_pickup, id_user, id_car, problem, waranty, deleted) VALUES (?, ?, NULL, NULL, ?, ?, ?, ?, 0)");
+                $stmt->bind_param("isissi", $employee_id, $date_request, $user_id, $car_id, $problem, $waranty);
+                if ($stmt->execute()) {
+                    $success = "¡Solicitud de servicio enviada exitosamente!";
+                } else {
+                    $error = "Error al enviar la solicitud: " . htmlspecialchars($conn->error);
+                }
+                $stmt->close();
             }
         }
-        $sale_stmt->close();
-
-        // Insert all columns, including date_finish and date_pickup, as NULL, and waranty
-        $sql = "INSERT INTO service (id_employee, date_request, date_finish, date_pickup, id_user, id_car, problem, waranty, deleted) 
-                VALUES ($employee_id, '$date_request', NULL, NULL, $user_id, $car_id, '$problem_escaped', $waranty, 0)";
-
-        // Debug: Show the SQL and error if any
-        if ($conn->query($sql) === TRUE) {
-            $success = "¡Solicitud de servicio enviada exitosamente!";
-        } else {
-            $error = "Error al enviar la solicitud: " . htmlspecialchars($conn->error) . "<br>SQL: $sql";
-        }
-    } else {
-        $error = "Por favor, completa todos los campos.";
+        $car_check->close();
     }
 }
 ?>
@@ -202,7 +235,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['logout'])) {
                 </div>
                 <div class="mb-3">
                     <label for="problem" class="form-label">Describe el problema</label>
-                    <textarea class="form-control" name="problem" rows="4" required></textarea>
+                    <textarea class="form-control" name="problem" rows="4" maxlength="65535" required></textarea>
+                    <div class="form-text">Describe detalladamente el problema que presenta tu vehículo.</div>
                 </div>
                 <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
                 <a href="index.php" class="btn btn-secondary">Cancelar</a>

@@ -3,6 +3,8 @@
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
 
+    require_once '../includes/validation.php';
+
     $servername = "localhost";
     $username = "root";
     $password = "";
@@ -16,45 +18,89 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $name = substr($_POST['name'], 0, 32); // Limit to 32 characters
-        $price = intval($_POST['price']);
-        $type = substr($_POST['type'], 0, 16); // Limit to 16 characters
+        $errors = [];
+        
+        // Validate name (varchar(32))
+        $name = trim($_POST['name']);
+        if ($error = validateVarchar($name, 'nombre del carro', 32)) {
+            $errors[] = $error;
+        }
+        
+        // Validate price (int)
+        $price = $_POST['price'];
+        if ($error = validateInt($price, 'precio')) {
+            $errors[] = $error;
+        }
+        if ($price <= 0) {
+            $errors[] = "El precio debe ser mayor que 0.";
+        }
+        
+        // Validate type (varchar(16))
+        $type = trim($_POST['type']);
+        if ($error = validateVarchar($type, 'tipo', 16)) {
+            $errors[] = $error;
+        }
+        
+        // Validate featured (tinyint)
         $featured = isset($_POST['featured']) ? 1 : 0;
-        $description = substr($_POST['description'], 0, 65535); // Limit to TEXT size
-        $year = intval($_POST['year']);
+        
+        // Validate description (text)
+        $description = trim($_POST['description']);
+        if ($error = validateText($description, 'descripción')) {
+            $errors[] = $error;
+        }
+        
+        // Validate year (int)
+        $year = $_POST['year'];
+        if ($error = validateInt($year, 'año')) {
+            $errors[] = $error;
+        }
+        $current_year = date('Y');
+        if ($year < 1900 || $year > $current_year + 1) {
+            $errors[] = "El año debe estar entre 1900 y " . ($current_year + 1) . ".";
+        }
+        
+        // Validate used (tinyint)
         $used = isset($_POST['used']) ? 1 : 0;
-
-        // Validate inputs
-        if (empty($name) || $price <= 0 || empty($type) || empty($description) || $year <= 0) {
-            $error_message = "Todos los campos son obligatorios y deben ser válidos.";
+        
+        // Validate image
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            $errors[] = "Por favor selecciona una imagen.";
         } else {
+            $fileInfo = pathinfo($_FILES["image"]["name"]);
+            $fileExtension = strtolower($fileInfo['extension']);
+            if ($fileExtension !== "png") {
+                $errors[] = "Solo se permiten archivos PNG.";
+            }
+        }
+        
+        if (empty($errors)) {
             // Handle image upload
             $targetDir = "../images/";
             $fileInfo = pathinfo($_FILES["image"]["name"]);
             $img_name = substr($fileInfo['filename'], 0, 32); // Limit to 32 characters
-            $fileExtension = strtolower($fileInfo['extension']);
             $targetFile = $targetDir . $img_name . ".png";
-
-            if ($fileExtension !== "png") {
-                $error_message = "Solo se permiten archivos PNG.";
-            } else {
-                if ($_FILES["image"]["error"] === UPLOAD_ERR_OK) {
-                    if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                        $sql = "INSERT INTO carros (name, price, type, featured, description, img_name, year, used, deleted) 
-                                VALUES ('$name', '$price', '$type', '$featured', '$description', '$img_name', '$year', '$used', 0)";
-
-                        if ($conn->query($sql) === TRUE) {
-                            $success_message = "Nuevo coche agregado exitosamente.";
-                        } else {
-                            $error_message = "Error: " . $sql . "<br>" . $conn->error;
-                        }
-                    } else {
-                        $error_message = "Error al mover el archivo subido. Verifica los permisos de la carpeta.";
-                    }
+            
+            if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
+                // Sanitize inputs for database
+                $name = $conn->real_escape_string($name);
+                $type = $conn->real_escape_string($type);
+                $description = $conn->real_escape_string($description);
+                $img_name = $conn->real_escape_string($img_name);
+                
+                $sql = "INSERT INTO carros (name, price, type, featured, description, img_name, year, used, deleted) 
+                        VALUES ('$name', $price, '$type', $featured, '$description', '$img_name', $year, $used, 0)";
+                
+                if ($conn->query($sql) === TRUE) {
+                    $success_message = "Carro agregado exitosamente.";
                 } else {
-                    $error_message = "Error al subir el archivo: " . $_FILES["image"]["error"];
+                    $error_message = "Error al agregar el carro: " . $conn->error;
                 }
+            } else {
+                $error_message = "Error al subir la imagen.";
             }
+        } else {
+            $error_message = implode("<br>", $errors);
         }
     }
 ?>
@@ -81,11 +127,11 @@
                 <form method="post" action="" enctype="multipart/form-data" id="carForm">
                     <div class="mb-3">
                         <label for="name" class="form-label">Nombre del Carro</label>
-                        <input type="text" class="form-control" name="name" required>
+                        <input type="text" class="form-control" name="name" maxlength="32" required>
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label">Precio</label>
-                        <input type="number" class="form-control" name="price" required max="2147483647">
+                        <input type="number" class="form-control" name="price" min="1" max="2147483647" required>
                     </div>
                     <div class="mb-3">
                         <label for="type" class="form-label">Tipo</label>
@@ -111,11 +157,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Descripcion</label>
-                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                        <textarea class="form-control" name="description" rows="3" maxlength="65535" required></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="year" class="form-label">Año</label>
-                        <input type="number" class="form-control" name="year" required>
+                        <input type="number" class="form-control" name="year" min="1900" max="<?php echo date('Y') + 1; ?>" required>
                     </div>
                     <div class="mb-3">
                         <label for="image" class="form-label">Subir Foto (solo PNG)</label>

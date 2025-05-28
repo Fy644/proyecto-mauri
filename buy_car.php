@@ -91,50 +91,31 @@
         }
     }
 
+    require_once 'includes/validation.php';
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['buy'])) {
-        // Capture submitted form data
+        // Original purchase logic without validation
         $client_name = $conn->real_escape_string($_POST['client_name']);
         $id_employee = intval($_POST['id_employee']);
         $id_car = intval($_POST['id_car']);
         $price = floatval($_POST['price']);
-        $monthly = isset($_POST['monthly']) ? intval($_POST['monthly']) : 0; // Default to 0 if not set
-        $months = isset($_POST['months']) && $_POST['months'] !== '' ? intval($_POST['months']) : 0; // Default to 0 if not set
+        $monthly = isset($_POST['monthly']) ? 1 : 0;
+        $months = isset($_POST['months']) ? intval($_POST['months']) : 0;
         $card_number = $conn->real_escape_string($_POST['card_number']);
         $expiration_month = intval($_POST['expiration_month']);
         $expiration_year = intval($_POST['expiration_year']);
         $pin = intval($_POST['pin']);
-
-        // Calculate down payment and monthly rate
         $down_payment = $price * 0.1; // Fixed 10% down payment
-        $monthly_rate = $monthly ? ($price - $down_payment) / $months : 0;
 
-        // Debugging: Log the SQL query
         $sql = "INSERT INTO sales (id_car, client, employee_id, client_id, price, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetimePurchase, waranty, deleted) 
                 VALUES ('$id_car', '$client_name', '$id_employee', '$client_id', '$price', '$down_payment', '$monthly', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 0)";
-        error_log("SQL Query: $sql");
-
+        
         if ($conn->query($sql) === TRUE) {
-            // Fetch employee name
-            $employee_name = $conn->query("SELECT name FROM employees WHERE id = $id_employee")->fetch_assoc()['name'];
-
-            // Store purchase details in session
-            $_SESSION['purchase_details'] = [
-                'client_name' => $client_name,
-                'car_name' => $car['name'],
-                'car_year' => $car['year'],
-                'price' => $price,
-                'down_payment' => $down_payment,
-                'monthly' => $monthly,
-                'monthly_rate' => $monthly_rate,
-                'months' => $months,
-                'employee_name' => $employee_name
-            ];
-
-            // Redirect to receipt page
-            header("Location: recipt.php");
+            $sale_id = $conn->insert_id;
+            header("Location: recipt.php?id=$sale_id");
             exit();
         } else {
-            $error_message = "Error al guardar la compra: " . $conn->error;
+            $error_message = "Error al procesar la compra: " . $conn->error;
         }
     }
 ?>
@@ -218,7 +199,7 @@
             <form method="post" action="">
                 <div class="mb-3">
                     <label for="client_name" class="form-label">Tu Nombre</label>
-                    <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios"
+                    <input type="text" class="form-control" name="client_name" maxlength="32" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios"
                         value="<?php
                             if (isset($_SESSION['user_id'])) {
                                 $uid = intval($_SESSION['user_id']);
@@ -245,17 +226,17 @@
                 <div id="monthly-options" style="display: none;">
                     <div class="mb-3">
                         <label for="months" class="form-label">Número de Meses</label>
-                        <input type="number" class="form-control" name="months" min="1">
+                        <input type="number" class="form-control" name="months" min="1" max="2147483647">
                     </div>
                 </div>
                 <div class="mb-3">
                     <label for="card_number" class="form-label">Número de Tarjeta</label>
-                    <input type="number" class="form-control" name="card_number" id="card_number" required>
+                    <input type="text" class="form-control" name="card_number" id="card_number" pattern="\d{1,20}" title="El número de tarjeta debe tener hasta 20 dígitos" required>
                 </div>
                 <div class="mb-3 expiration-date">
                     <label for="expiration_month" class="form-label">Expiración:</label>
                     <input type="number" class="form-control" name="expiration_month" min="1" max="12" placeholder="MM" required>
-                    <input type="number" class="form-control" name="expiration_year" min="<?php echo date('Y'); ?>" placeholder="YYYY" required max="<?php echo date('Y') + 10; ?>">
+                    <input type="number" class="form-control" name="expiration_year" min="<?php echo date('Y'); ?>" max="<?php echo date('Y') + 10; ?>" placeholder="YYYY" required>
                 </div>
                 <div class="mb-3">
                     <label for="pin" class="form-label">PIN de la Tarjeta</label>
