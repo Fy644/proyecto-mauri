@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 26, 2025 at 04:15 AM
+-- Generation Time: May 28, 2025 at 04:00 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -75,39 +75,8 @@ INSERT INTO `carros` (`id`, `name`, `price`, `type`, `featured`, `description`, 
 (7, 'Mazda Autozam AZ-1', 20000, 'sport', 1, 'The Autozam AZ-1, known by the framecode PG6SA, is a mid-engined kei-class sports car, designed and manufactured by Mazda under its Autozam brand. Suzuki provided the engine as well as the inspiration for the design.', 'mazda_autozam', 1992, 0, 0),
 (8, 'Pegassi Infernus', 230000, 'sport', 1, 'The performance of the Infernus remains similar in all of its appearances by being one of, if not the fastest car in each game. Unlike subsequent depictions that have an all-wheel-drive system, the Infernus in GTA III has a rear-wheel-drive layout.\r\n\r\nDespite the change in drivetrain layout, its handling remains similar and its all-wheel-drive system means the car has good front grip.', 'pegassi_infernus', 2023, 0, 0),
 (9, 'Volkswagen Golf GTI 3', 62000, 'hatchback', 1, 'Its cool i think idk tho ', 'gti', 2025, 0, 0),
-(10, 'Chevrolet Express Cargo', 10, 'van', 0, 'coolo\r\n', 'chevy_van', 2025, 0, 0);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `chat_messages`
---
-
-CREATE TABLE `chat_messages` (
-  `id` int(11) NOT NULL,
-  `sender_type` enum('employee','user','admin') NOT NULL,
-  `reciever_type` enum('employee','user','admin') NOT NULL,
-  `sender_id` int(11) NOT NULL,
-  `receiver_id` int(11) NOT NULL,
-  `message` text NOT NULL,
-  `created_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `chat_sessions`
---
-
-CREATE TABLE `chat_sessions` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT NULL,
-  `employee_id` int(11) DEFAULT NULL,
-  `admin_id` int(11) DEFAULT NULL,
-  `topic` varchar(64) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(10, 'Chevrolet Express Cargo', 10, 'van', 0, 'coolo\r\n', 'chevy_van', 2025, 0, 0),
+(11, 'Mazda 3', 2147483644, 'hatchback', 1, 'Fofo lo choco que pendejo', 'maserati-removebg-preview', 2015, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -564,18 +533,6 @@ ALTER TABLE `carros`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `chat_messages`
---
-ALTER TABLE `chat_messages`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `chat_sessions`
---
-ALTER TABLE `chat_sessions`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `citas`
 --
 ALTER TABLE `citas`
@@ -626,19 +583,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `carros`
 --
 ALTER TABLE `carros`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `chat_messages`
---
-ALTER TABLE `chat_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `chat_sessions`
---
-ALTER TABLE `chat_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `citas`
@@ -656,7 +601,7 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=256;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=201;
 
 --
 -- AUTO_INCREMENT for table `sales`

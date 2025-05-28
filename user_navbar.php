@@ -16,6 +16,44 @@ if (isset($_SESSION['user_id'])) {
 $login_error = $login_error ?? null;
 $show_login_popup = $show_login_popup ?? false;
 ?>
+<style>
+    .navbar {
+        background-color: #343a40; /* Dark gray for navbar */
+    }
+    .navbar-brand, .nav-link {
+        color: #ffffff !important; /* White text for navbar links */
+    }
+    .user-login-icon {
+                width: 32px;
+                height: 32px;
+                cursor: pointer;
+            }
+            .user-login-form {
+                display: none;
+                position: fixed;
+                top: 50px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+            .admin-login {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 0.9rem;
+                color: #6c757d;
+                text-decoration: none;
+            }
+            .admin-login:hover {
+                color: #343a40;
+            }
+
+</style>
+
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="index.php">Agencia Lou-Lou</a>
@@ -31,6 +69,7 @@ $show_login_popup = $show_login_popup ?? false;
                     <li class="nav-item"><a href="service_request.php" class="nav-link">Solicitar servicio</a></li>
                     <li class="nav-item"><a href="review_car.php" class="nav-link">Reseñar coche</a></li>
                 <?php endif; ?>
+                <li class="nav-item"><a href="contacts.php" class="nav-link">Informes</a></li>
             </ul>
         </div>
         <!-- Search bar start -->
@@ -88,3 +127,17 @@ function toggleUserLogin() {
     });
 <?php endif; ?>
 </script>
+<script>
+            function toggleUserLogin() {
+                const form = document.getElementById('userLoginForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            }
+
+            // Automatically show login popup if login error exists
+            <?php if ($show_login_popup): ?>
+                document.addEventListener('DOMContentLoaded', function () {
+                    toggleUserLogin();
+                });
+            <?php endif; ?>
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
