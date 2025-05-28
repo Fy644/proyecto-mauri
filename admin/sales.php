@@ -20,7 +20,8 @@
     // Fetch the 5 most recent sales
     $sales = $conn->query("
         SELECT sales.id, sales.client, sales.price, sales.down, sales.monthly, sales.months, 
-               sales.id_car, sales.employee_id, sales.datetimePurchase, carros.name AS car_name, employees.name AS employee_name 
+               sales.id_car, sales.employee_id, sales.datetimePurchase, sales.waranty,
+               carros.name AS car_name, employees.name AS employee_name 
         FROM sales 
         INNER JOIN carros ON sales.id_car = carros.id 
         INNER JOIN employees ON sales.employee_id = employees.id 
@@ -93,6 +94,7 @@
                                 <th>Pago Mensual</th>
                                 <th>Meses</th>
                                 <th>Fecha de Venta</th>
+                                <th>Garantía hasta</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -119,6 +121,7 @@
                                     </td>
                                     <td><?php echo $sale['months'] > 0 ? $sale['months'] : "N/A"; ?></td>
                                     <td><?php echo htmlspecialchars($sale['datetimePurchase']); ?></td>
+                                    <td><?php echo htmlspecialchars($sale['waranty']); ?></td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>

@@ -59,33 +59,42 @@
 
             // Handle profile picture upload
             $targetDir = "userpfp/";
-            $fileInfo = pathinfo($_FILES["profile_picture"]["name"]);
             $profile_picture_name = $user_id; // Use user ID as the filename
-            $fileExtension = strtolower($fileInfo['extension']);
             $targetFile = $targetDir . $profile_picture_name . ".png";
 
             if (!is_writable($targetDir)) {
                 $error_message = "The profile picture folder is not writable. Please check folder permissions.";
             } else {
-                if ($_FILES["profile_picture"]["error"] === UPLOAD_ERR_OK) {
-                    if ($fileExtension === "png") {
-                        if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $targetFile)) {
-                            $update_query = $conn->prepare("UPDATE users SET email = ?, fullname = ?, profile_picture = ? WHERE id = ?");
-                            $update_query->bind_param("sssi", $new_email, $new_fullname, $targetFile, $user_id);
+                // Only process file upload if a file was actually selected
+                if (isset($_FILES["profile_picture"]) && $_FILES["profile_picture"]["error"] !== UPLOAD_ERR_NO_FILE) {
+                    $fileInfo = pathinfo($_FILES["profile_picture"]["name"]);
+                    $fileExtension = isset($fileInfo['extension']) ? strtolower($fileInfo['extension']) : '';
 
-                            if ($update_query->execute()) {
-                                $success_message = "Perfil actualizado con éxito.";
+                    if ($_FILES["profile_picture"]["error"] === UPLOAD_ERR_OK) {
+                        if ($fileExtension === "png") {
+                            if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $targetFile)) {
+                                $update_query = $conn->prepare("UPDATE users SET email = ?, fullname = ?, profile_picture = ? WHERE id = ?");
+                                $update_query->bind_param("sssi", $new_email, $new_fullname, $targetFile, $user_id);
                             } else {
-                                $error_message = "Error al actualizar el perfil.";
+                                $error_message = "Error al mover el archivo subido. Verifique los permisos de la carpeta.";
                             }
                         } else {
-                            $error_message = "Error al mover el archivo subido. Verifique los permisos de la carpeta.";
+                            $error_message = "Solo se permiten archivos PNG para la foto de perfil.";
                         }
                     } else {
-                        $error_message = "Solo se permiten archivos PNG para la foto de perfil.";
+                        $error_message = "Error al subir el archivo: " . $_FILES["profile_picture"]["error"];
                     }
                 } else {
-                    $error_message = "Error al subir el archivo: " . $_FILES["profile_picture"]["error"];
+                    // If no file was uploaded, just update email and fullname
+                    $update_query = $conn->prepare("UPDATE users SET email = ?, fullname = ? WHERE id = ?");
+                    $update_query->bind_param("ssi", $new_email, $new_fullname, $user_id);
+                }
+
+                // Execute the update query if it was prepared
+                if (isset($update_query) && $update_query->execute()) {
+                    $success_message = "Perfil actualizado con éxito.";
+                } else if (!isset($error_message)) {
+                    $error_message = "Error al actualizar el perfil.";
                 }
             }
         }

@@ -80,9 +80,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['logout'])) {
         $date_request = date('Y-m-d');
         $problem_escaped = $conn->real_escape_string($problem);
 
-        // Insert all columns, including date_finish and date_pickup, as NULL
-        $sql = "INSERT INTO service (id_employee, date_request, date_finish, date_pickup, id_user, id_car, problem, deleted) 
-                VALUES ($employee_id, '$date_request', NULL, NULL, $user_id, $car_id, '$problem_escaped', 0)";
+        // Determine waranty status for this sale
+        $waranty = 0;
+        $sale_stmt = $conn->prepare("SELECT waranty FROM sales WHERE id = ? AND client_id = ? AND deleted = 0");
+        $sale_stmt->bind_param("ii", $car_id, $user_id);
+        $sale_stmt->execute();
+        $sale_stmt->bind_result($waranty_date);
+        if ($sale_stmt->fetch()) {
+            if ($waranty_date && $waranty_date > $date_request) {
+                $waranty = 1;
+            }
+        }
+        $sale_stmt->close();
+
+        // Insert all columns, including date_finish and date_pickup, as NULL, and waranty
+        $sql = "INSERT INTO service (id_employee, date_request, date_finish, date_pickup, id_user, id_car, problem, waranty, deleted) 
+                VALUES ($employee_id, '$date_request', NULL, NULL, $user_id, $car_id, '$problem_escaped', $waranty, 0)";
 
         // Debug: Show the SQL and error if any
         if ($conn->query($sql) === TRUE) {

@@ -73,14 +73,21 @@
     $client_id = 0; // Default client_id to 0
     if (isset($_SESSION['user_id'])) {
         $user_id = $_SESSION['user_id'];
-        $sql = "SELECT id, fullname, profile_picture FROM users WHERE id = ?";
+        $sql = "SELECT id, username, fullname, profile_picture FROM users WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
             $user_data = $result->fetch_assoc();
-            $client_id = $user_data['id']; // Set client_id to the logged-in user's ID
+            // Ensure keys exist even if values are empty
+            if (!isset($user_data['fullname'])) $user_data['fullname'] = '';
+            if (!isset($user_data['username'])) $user_data['username'] = '';
+            $client_id = $user_data['id'];
+        } else {
+            // Ensure keys exist if user not found
+            $user_data['fullname'] = '';
+            $user_data['username'] = '';
         }
     }
 
@@ -102,8 +109,8 @@
         $monthly_rate = $monthly ? ($price - $down_payment) / $months : 0;
 
         // Debugging: Log the SQL query
-        $sql = "INSERT INTO sales (id_car, client, employee_id, client_id, price, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetimePurchase, deleted) 
-                VALUES ('$id_car', '$client_name', '$id_employee', '$client_id', '$price', '$down_payment', '$monthly', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', NOW(), 0)";
+        $sql = "INSERT INTO sales (id_car, client, employee_id, client_id, price, down, monthly, months, card_number, expiration_month, expiration_year, pin, datetimePurchase, waranty, deleted) 
+                VALUES ('$id_car', '$client_name', '$id_employee', '$client_id', '$price', '$down_payment', '$monthly', '$months', '$card_number', '$expiration_month', '$expiration_year', '$pin', NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 0)";
         error_log("SQL Query: $sql");
 
         if ($conn->query($sql) === TRUE) {
@@ -211,7 +218,16 @@
             <form method="post" action="">
                 <div class="mb-3">
                     <label for="client_name" class="form-label">Tu Nombre</label>
-                    <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios" value="<?php echo isset($user_data['fullname']) ? htmlspecialchars($user_data['fullname']) : ''; ?>" required>
+                    <input type="text" class="form-control" name="client_name" maxlength="50" pattern="[a-zA-Z' ]+" title="Solo se permiten letras, apóstrofes y espacios"
+                        value="<?php
+                            if (isset($_SESSION['user_id'])) {
+                                $uid = intval($_SESSION['user_id']);
+                                $res = $conn->query("SELECT fullname FROM users WHERE id = $uid");
+                                if ($res && $row = $res->fetch_assoc()) {
+                                    echo htmlspecialchars($row['fullname']);
+                                }
+                            }
+                        ?>" required>
                 </div>
                 <div class="mb-3">
                     <label for="id_employee" class="form-label">Empleado que te atendió</label>

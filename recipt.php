@@ -37,41 +37,41 @@
     $pdf->SetFont('Arial', '', 12);
 
     // Add purchase details
-    $pdf->Cell(0, 10, 'Recibo de Compra', 0, 1, 'C');
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Recibo de Compra'), 0, 1, 'C');
     $pdf->Ln(5);
 
     // Customer Information
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Informacion del Cliente:', 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Información del Cliente:'), 0, 1);
     $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(0, 10, 'Nombre: ' . $details['client_name'], 0, 1);
-    $pdf->Cell(0, 10, 'Fecha de Compra: ' . date('d/m/Y'), 0, 1);
-    $pickup_date = date('d/m/Y', strtotime('+1 week'));
-    $pdf->Cell(0, 10, 'Fecha de Entrega: ' . $pickup_date, 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Nombre: ') . iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $details['client_name']), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Fecha de Compra: ') . date('d/m/Y'), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Fecha de Entrega: ') . date('d/m/Y', strtotime('+1 week')), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Garantía válida hasta: ') . date('d/m/Y', strtotime('+1 year')), 0, 1);
     $pdf->Ln(5);
 
     // Car Information
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Detalles del Coche:', 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Detalles del Coche:'), 0, 1);
     $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(0, 10, 'Coche: ' . $details['car_name'] . ' (' . $details['car_year'] . ')', 0, 1);
-    $pdf->Cell(0, 10, 'Precio: $' . number_format($details['price'], 2), 0, 1);
-    $pdf->Cell(0, 10, 'Pago Inicial: $' . number_format($details['down_payment'], 2), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Coche: ') . iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $details['car_name']) . ' (' . $details['car_year'] . ')', 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Precio: $') . number_format($details['price'], 2), 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Pago Inicial: $') . number_format($details['down_payment'], 2), 0, 1);
 
     if ($details['monthly']) {
-        $pdf->Cell(0, 10, 'Pago Mensual: $' . number_format($details['monthly_rate'], 2), 0, 1);
-        $pdf->Cell(0, 10, 'Meses: ' . $details['months'], 0, 1);
+        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Pago Mensual: $') . number_format($details['monthly_rate'], 2), 0, 1);
+        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Meses: ') . $details['months'], 0, 1);
     } else {
-        $pdf->Cell(0, 10, 'Pago Mensual: N/A', 0, 1);
+        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Pago Mensual: N/A'), 0, 1);
     }
 
     $pdf->Ln(5);
 
     // Employee Information
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Atendido por:', 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Atendido por:'), 0, 1);
     $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(0, 10, 'Empleado: ' . $details['employee_name'], 0, 1);
+    $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Empleado: ') . iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $details['employee_name']), 0, 1);
 
     // Output the PDF directly to the browser
     $pdf->Output('I', 'Recibo_Compra.pdf'); // 'I' displays the PDF in the browser

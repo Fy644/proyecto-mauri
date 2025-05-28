@@ -79,6 +79,7 @@
                         <th>Fecha Terminado</th>
                         <th>Fecha Entregado</th>
                         <th class="status-col">Estado</th>
+                        <th>Garantía</th>
                         <th>Actualizar</th>
                     </tr>
                 </thead>
@@ -109,6 +110,13 @@
                             ?>
                         </td>
                         <td>
+                            <?php if ($service['waranty'] == 1): ?>
+                                <span class="badge bg-success">En garantía</span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">Sin garantía</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
                                 <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
                                 <button type="submit" name="update_service" class="btn btn-sm btn-primary">Guardar</button>
                             </form>
@@ -116,7 +124,7 @@
                     </tr>
                 <?php endforeach; ?>
                 <?php if (empty($services)): ?>
-                    <tr><td colspan="9" class="text-center">No hay servicios asignados.</td></tr>
+                    <tr><td colspan="10" class="text-center">No hay servicios asignados.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>
