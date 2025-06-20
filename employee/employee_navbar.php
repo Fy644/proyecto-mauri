@@ -120,6 +120,7 @@
             <?php if ($level !== null && $level >= 4): ?>
                 <a href="servicios.php">Servicios</a>
             <?php endif; ?>
+            <a href="view_appointments.php">Citas</a>
             <a href="../logout.php">Cerrar Sesión</a>
             <div class="sidebar-name">
                 <?php echo htmlspecialchars($name); ?>

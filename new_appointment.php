@@ -115,7 +115,8 @@
                             $stmt = $conn->prepare("INSERT INTO citas (datetime, client_name, phone, id_car, id_employee, deleted) VALUES (?, ?, ?, ?, ?, 0)");
                             $stmt->bind_param("sssii", $datetime, $client_name, $phone, $id_car, $id_employee);
                             if ($stmt->execute()) {
-                                $success_message = "Cita creada con éxito.";
+                                // Show the registered time in the success message
+                                $success_message = "Cita creada con éxito. Hora registrada: " . date('d/m/Y H:i', strtotime($datetime));
                             } else {
                                 $error_message = "Error al crear la cita: " . htmlspecialchars($conn->error);
                             }
@@ -207,7 +208,20 @@
                 <input type="hidden" name="create_appointment" value="1">
                 <div class="mb-3">
                     <label for="datetime" class="form-label">Fecha y Hora de la Cita</label>
-                    <input type="datetime-local" class="form-control" name="datetime" id="datetime" min="<?php echo date('Y-m-d\TH:00'); ?>" required>
+                    <input type="datetime-local" class="form-control" name="datetime" id="datetime"
+                        min="<?php
+                            // Round down to the nearest hour for min attribute
+                            $now = time();
+                            $rounded = strtotime(date('Y-m-d H:00:00', $now));
+                            echo date('Y-m-d\TH:00', $rounded);
+                        ?>"
+                        value="<?php
+                            // Set default value rounded down to the nearest hour
+                            $now = time();
+                            $rounded = strtotime(date('Y-m-d H:00:00', $now));
+                            echo date('Y-m-d\TH:00', $rounded);
+                        ?>"
+                        required>
                 </div>
                 <div class="mb-3">
                     <label for="client_name" class="form-label">Tu Nombre</label>

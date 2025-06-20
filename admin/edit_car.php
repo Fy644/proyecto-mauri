@@ -87,16 +87,34 @@
             
             // Validate used (tinyint)
             $used = isset($_POST['used']) ? 1 : 0;
-            
+
             // Handle image upload if provided
-            $img_name = $car['img_name']; // Keep existing image by default
+            // Always get the current image name from the hidden field
+            $img_name = isset($_POST['img_name']) ? $_POST['img_name'] : '';
             if (!empty($_FILES['image']['name'])) {
                 if ($_FILES['image']['type'] !== 'image/png') {
                     $errors[] = "La imagen debe ser en formato PNG.";
                 } else {
-                    $img_name = uniqid() . '.png';
-                    if (!move_uploaded_file($_FILES['image']['tmp_name'], '../img/cars/' . $img_name)) {
-                        $errors[] = "Error al subir la imagen.";
+                    $original_filename = $_FILES['image']['name'];
+                    $target_dir = '/opt/lampp/htdocs/proyecto-mauri/images';
+                    $target_path = $target_dir . '/' . $original_filename;
+                    // Debug info
+                    if (!is_dir($target_dir)) {
+                        $errors[] = "El directorio de destino no existe: $target_dir";
+                    } elseif (!is_writable($target_dir)) {
+                        $errors[] = "Directorio destino no tiene permisos de escritura: $target_dir";
+                    }
+                    if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                        $errors[] = "Error en la subida del archivo. Código de error: " . $_FILES['image']['error'];
+                    }
+                    // Try to move the uploaded file
+                    if (empty($errors)) {
+                        if (!move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
+                            $errors[] = "Error al subir la imagen. Ruta destino: $target_path";
+                        } else {
+                            // Store only the filename without extension in the DB
+                            $img_name = pathinfo($original_filename, PATHINFO_FILENAME);
+                        }
                     }
                 }
             }
@@ -173,6 +191,7 @@
                     <!-- Form to edit the selected car -->
                     <form method="post" action="" enctype="multipart/form-data">
                         <input type="hidden" name="car_id" value="<?php echo $car['id']; ?>">
+                        <input type="hidden" name="img_name" value="<?php echo htmlspecialchars($car['img_name']); ?>">
                         <div class="mb-3">
                             <label for="name" class="form-label">Nombre del Auto</label>
                             <input type="text" class="form-control" name="name" maxlength="32" value="<?php echo htmlspecialchars($car['name']); ?>" required>
@@ -204,6 +223,14 @@
                                 <input type="checkbox" class="form-check-input" name="used" id="used" <?php echo $car['used'] ? 'checked' : ''; ?>>
                                 <label class="form-check-label" for="used">Usado</label>
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Imagen actual</label><br>
+                            <?php if (!empty($car['img_name'])): ?>
+                                <img src="/proyecto-mauri/images/<?php echo htmlspecialchars($car['img_name']); ?>.png" alt="Imagen actual" style="max-width: 120px; max-height: 80px; border:1px solid #ccc; margin-bottom:8px;">
+                            <?php else: ?>
+                                <span class="text-muted">No hay imagen</span>
+                            <?php endif; ?>
                         </div>
                         <div class="mb-3">
                             <label for="image" class="form-label">Imagen (PNG)</label>
